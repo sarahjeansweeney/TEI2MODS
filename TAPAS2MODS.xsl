@@ -134,6 +134,7 @@
                     | .[@type='marc245a']
                     | .[@type='sub']
                     | .[@type='marc245b']
+                    | .[@type='marc245c']
                     | .[@level='a']
                     | .[@level='m']
                     | .[@level='j']
@@ -179,22 +180,34 @@
                 <xsl:call-template name="nonSort"/>
                 <xsl:choose>
                     <xsl:when test="title[@level='m'][@type='main']">
-                        <xsl:if test="title[@level='m'][@type='main']">
-                            <mods:title>
-                                <xsl:value-of select="normalize-space(title[@level='m'][@type='main'])"/>
-                            </mods:title>
-                        </xsl:if>
-                        <xsl:if test="title[@level='m'][@type='sub']">
-                            <mods:subTitle>
-                                <xsl:value-of select="normalize-space(title[@level='m'][@type='sub'])"/>
-                            </mods:subTitle>
-                        </xsl:if>
+
+                        <mods:title>
+                            <xsl:value-of select="normalize-space(title[@level='m'][@type='main'])"/>
+                        </mods:title>
                     </xsl:when>
+                    <xsl:when test="title[@level='m'][@type='marc245a']">
+                        <mods:title>
+                            <xsl:value-of select="normalize-space(title[@level='m'][@type='marc245a'])"/>
+                        </mods:title>
+                    </xsl:when>
+
                     <xsl:otherwise>
                         <mods:title>
                             <xsl:value-of select="normalize-space(title[@level='m'])"/>
                         </mods:title>
                     </xsl:otherwise>
+                </xsl:choose>
+                <xsl:choose>
+                    <xsl:when test="title[@level='m'][@type='sub']">
+                        <mods:subTitle>
+                            <xsl:value-of select="normalize-space(title[@level='m'][@type='sub'])"/>
+                        </mods:subTitle>
+                    </xsl:when>
+                    <xsl:when test="title[@level='m'][@type='marc245b']">
+                        <mods:title>
+                            <xsl:value-of select="normalize-space(title[@level='m'][@type='marc245b'])"/>
+                        </mods:title>
+                    </xsl:when>
                 </xsl:choose>
             </mods:titleInfo>
         </xsl:if>
@@ -388,28 +401,29 @@
 
             </xsl:when>
             <xsl:when test="persName">
+                <xsl:for-each select="persName">
                 <xsl:choose>
-                    <xsl:when test="persName/surname">
+                    <xsl:when test="surname">
                         <mods:namePart>
-                            <xsl:value-of select="persName/surname"/>
-                            <xsl:if test="persName/forename">
+                            <xsl:value-of select="surname"/>
+                            <xsl:if test="forename">
                                 <xsl:text>, </xsl:text>
                                 <xsl:choose>
-                                    <xsl:when test="persName/forename[@type='first']">
-                                        <xsl:value-of select="persName/forename[@type='first']"/>
+                                    <xsl:when test="forename[@type='first']">
+                                        <xsl:value-of select="forename[@type='first']"/>
                                     </xsl:when>
                                     <xsl:otherwise>
-                                        <xsl:value-of select="persName/forename"/>
+                                        <xsl:value-of select="forename"/>
                                     </xsl:otherwise>
                                 </xsl:choose>
-                                <xsl:if test="persName/forename[@type='middle']">
+                                <xsl:if test="forename[@type='middle']">
                                     <xsl:text> </xsl:text>
-                                    <xsl:value-of select="persName/forename[@type='middle']"/>
+                                    <xsl:value-of select="forename[@type='middle']"/>
                                 </xsl:if>
                             </xsl:if>
                         </mods:namePart>
                     </xsl:when>
-                    <xsl:when test="persName/title">
+                    <xsl:when test="title">
                         <mods:namePart>
                             <xsl:for-each select="$persNameTitle">
                                 <xsl:call-template name="invertName"/>
@@ -419,13 +433,13 @@
                     </xsl:when>
                     <xsl:otherwise>
                         <mods:namePart>
-                            <xsl:for-each select="persName">
+                            <xsl:for-each select=".">
                                 <xsl:call-template name="invertName"/>
                             </xsl:for-each>
                         </mods:namePart>
                     </xsl:otherwise>
                 </xsl:choose>
-
+                </xsl:for-each>
             </xsl:when>
             <xsl:when test="name">
 
@@ -722,18 +736,30 @@
 
             <xsl:if test="teiHeader/fileDesc/publicationStmt/date">
                 <xsl:for-each select="teiHeader/fileDesc/publicationStmt">
-                    <mods:dateCreated>
+                    
                         <xsl:choose>
                             <xsl:when test="date[@when]">
+                                <mods:dateCreated>
                                 <xsl:value-of select="date/@when"/>
+                                </mods:dateCreated>
+                            </xsl:when>
+                            <xsl:when test="date[@notBefore]">
+                                <mods:dateCreated point='start' qualifier='approximate' keyDate='yes'>
+                                    <xsl:value-of select="date/@notBefore"/>
+                                </mods:dateCreated>
+                                <mods:dateCreated point='end' qualifier='approximate'>
+                                    <xsl:value-of select="date/@notAfter"/>
+                                </mods:dateCreated>
                             </xsl:when>
                             <xsl:otherwise>
+                                <mods:dateCreated>
                                 <xsl:value-of select="$pubYear"/>
                                 <xsl:value-of select="$pubMonth"/>
                                 <xsl:value-of select="$pubDay"/>
+                                </mods:dateCreated>
                             </xsl:otherwise>
                         </xsl:choose>
-                    </mods:dateCreated>
+                    
                 </xsl:for-each>
             </xsl:if>
             <xsl:for-each select="teiHeader/fileDesc/publicationStmt/availability/p">
@@ -994,31 +1020,21 @@
                 <xsl:for-each select="teiHeader/fileDesc/sourceDesc/biblStruct/analytic">
                     <xsl:call-template name="monoanalytic"/>
                 </xsl:for-each>
-                <!--<xsl:choose>
-                <xsl:when test="teiHeader/fileDesc/sourceDesc/biblStruct/analytic/title[@level='a']">
+            </mods:relatedItem>
+        </xsl:if>
 
-                    <xsl:for-each select="teiHeader/fileDesc/sourceDesc/biblStruct/analytic/title[@level='a']">
-
-                        <xsl:call-template name="original"/>
-
-                    </xsl:for-each>
-                </xsl:when>
-
-                <xsl:when test="not(contains(teiHeader/fileDesc/sourceDesc/biblStruct/analytic/title/@level, 'a'))">
-
-                    <xsl:for-each select="teiHeader/fileDesc/sourceDesc/biblStruct/analytic/title">
-                        <xsl:call-template name="original"/>
-                    </xsl:for-each>
-
-                </xsl:when>
-
-                <xsl:otherwise>
-                    <xsl:for-each select="teiHeader/fileDesc/sourceDesc/biblStruct/analytic/title">
-                        <xsl:call-template name="original"/>
-                    </xsl:for-each>
-                </xsl:otherwise>
-
-            </xsl:choose>-->
+        <xsl:if test="teiHeader/fileDesc/sourceDesc/bibl">
+            <mods:relatedItem type="original">
+                <xsl:choose>
+                    <xsl:when test="teiHeader/fileDesc/sourceDesc/bibl/title">
+                        <xsl:for-each select="teiHeader/fileDesc/sourceDesc/bibl">
+                            <xsl:call-template name="monoanalytic"/>
+                        </xsl:for-each>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="normalize-space(teiHeader/fileDesc/sourceDesc/bibl)"/>
+                    </xsl:otherwise>
+                </xsl:choose>
             </mods:relatedItem>
         </xsl:if>
 
