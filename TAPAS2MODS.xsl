@@ -111,12 +111,17 @@
 
 
         <mods:titleInfo>
+
             <xsl:if test="title[@type='main']">
+
+                <xsl:call-template name="nonSort"/>
+
                 <mods:title>
                     <xsl:value-of select="normalize-space(title[@type='main'])"/>
                 </mods:title>
             </xsl:if>
             <xsl:if test="title[@type='marc245a']">
+                <xsl:call-template name="nonSort"/>
                 <mods:title>
                     <xsl:value-of select="title[@type='marc245a']"/>
                 </mods:title>
@@ -139,6 +144,8 @@
                     | .[@type='trunc']
                     | .[@type='filing']
                     | .[@type='desc'])">
+
+                    <xsl:call-template name="nonSort"/>
                     <mods:title>
                         <xsl:value-of select="."/>
                     </mods:title>
@@ -159,24 +166,17 @@
 
         <xsl:if test="title[@level='a']">
             <mods:titleInfo displayLabel="Analytic Title">
+
+                <xsl:call-template name="nonSort"/>
                 <mods:title>
-                    <xsl:choose>
-                        <xsl:when test="title[@level='a']/persName">
-
-                            <xsl:value-of select="normalize-space(title[@level='a'])"/>
-
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:value-of select="normalize-space(title[@level='a'])"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
-
+                    <xsl:value-of select="normalize-space(title[@level='a'])"/>
                 </mods:title>
             </mods:titleInfo>
         </xsl:if>
 
         <xsl:if test="title[@level='m']">
             <mods:titleInfo displayLabel="Monographic Title">
+                <xsl:call-template name="nonSort"/>
                 <xsl:choose>
                     <xsl:when test="title[@level='m'][@type='main']">
                         <xsl:if test="title[@level='m'][@type='main']">
@@ -201,6 +201,7 @@
 
         <xsl:if test="title[@level='j']">
             <mods:titleInfo displayLabel="Journal Title">
+                <xsl:call-template name="nonSort"/>
                 <mods:title>
                     <xsl:value-of select="normalize-space(title[@level='j'])"/>
                 </mods:title>
@@ -208,6 +209,7 @@
         </xsl:if>
         <xsl:if test="title[@level='u']">
             <mods:titleInfo displayLabel="Unpublished Title">
+                <xsl:call-template name="nonSort"/>
                 <mods:title>
                     <xsl:value-of select="normalize-space(title[@level='u'])"/>
                 </mods:title>
@@ -216,6 +218,7 @@
 
         <xsl:if test="title[@type='alt']">
             <mods:titleInfo type="alternative" displayLabel="Alternative Title">
+                <xsl:call-template name="nonSort"/>
                 <mods:title>
                     <xsl:value-of select="normalize-space(title[@type='alt'])"/>
                 </mods:title>
@@ -223,6 +226,7 @@
         </xsl:if>
         <xsl:if test="title[@type='short']">
             <mods:titleInfo type="abbreviated" displayLabel="Abbreviated Title">
+                <xsl:call-template name="nonSort"/>
                 <mods:title>
                     <xsl:value-of select="normalize-space(title[@type='short'])"/>
                 </mods:title>
@@ -230,6 +234,7 @@
         </xsl:if>
         <xsl:if test="title[@type='trunc']">
             <mods:titleInfo type="abbreviated" displayLabel="Abbreviated Title">
+                <xsl:call-template name="nonSort"/>
                 <mods:title>
                     <xsl:value-of select="normalize-space(title[@type='trunc'])"/>
                 </mods:title>
@@ -237,12 +242,21 @@
         </xsl:if>
         <xsl:if test="title[@type='desc']">
             <mods:titleInfo displayLabel="Abbreviated Title">
+                <xsl:call-template name="nonSort"/>
                 <mods:title>
                     <xsl:value-of select="normalize-space(title[@type='desc'])"/>
                 </mods:title>
             </mods:titleInfo>
         </xsl:if>
 
+    </xsl:template>
+
+    <xsl:template name="nonSort" xmlns:mods="http://www.loc.gov/mods/v3">
+        <xsl:if test="title[@type='filing']">
+            <mods:nonSort>
+                <xsl:value-of select="title[@type='filing']"/>
+            </mods:nonSort>
+        </xsl:if>
     </xsl:template>
 
     <!-- CREATORS -->
@@ -937,7 +951,6 @@
     <xsl:template name="relatedItem" xmlns:mods="http://www.loc.gov/mods/v3">
 
         <!-- SERIES -->
-
         <xsl:if test="teiHeader/fileDesc/titleStmt/title[@level='s']">
             <mods:relatedItem type="series">
                 <mods:titleInfo>
@@ -975,74 +988,59 @@
             </mods:relatedItem>
         </xsl:if>
 
-
-<!-- LEFT OFF HERE. NEED TO MAKE SURE THE TEMPLATES ARE BEING CALLED APPROPRIATELY -->
-
-        <!-- ORIGINAL -->
+        <!-- ORIGINAL/ANALYTIC -->
         <xsl:if test="teiHeader/fileDesc/sourceDesc/biblStruct/analytic/title">
-            <xsl:choose>
+            <mods:relatedItem type="original">
+                <xsl:for-each select="teiHeader/fileDesc/sourceDesc/biblStruct/analytic">
+                    <xsl:call-template name="monoanalytic"/>
+                </xsl:for-each>
+                <!--<xsl:choose>
                 <xsl:when test="teiHeader/fileDesc/sourceDesc/biblStruct/analytic/title[@level='a']">
-                    
+
                     <xsl:for-each select="teiHeader/fileDesc/sourceDesc/biblStruct/analytic/title[@level='a']">
-                        
+
                         <xsl:call-template name="original"/>
-                        
+
                     </xsl:for-each>
                 </xsl:when>
-            
+
                 <xsl:when test="not(contains(teiHeader/fileDesc/sourceDesc/biblStruct/analytic/title/@level, 'a'))">
-                    
+
                     <xsl:for-each select="teiHeader/fileDesc/sourceDesc/biblStruct/analytic/title">
                         <xsl:call-template name="original"/>
                     </xsl:for-each>
-                    
+
                 </xsl:when>
-                
+
                 <xsl:otherwise>
                     <xsl:for-each select="teiHeader/fileDesc/sourceDesc/biblStruct/analytic/title">
                         <xsl:call-template name="original"/>
                     </xsl:for-each>
                 </xsl:otherwise>
-            
-            </xsl:choose>
-            
+
+            </xsl:choose>-->
+            </mods:relatedItem>
         </xsl:if>
 
-        <!-- HOST -->
-
+        <!-- HOST/MONOGRAPHIC -->
         <xsl:if test="teiHeader/fileDesc/sourceDesc/biblStruct/monogr/title">
-            
-            <xsl:choose>
-                <xsl:when test="teiHeader/fileDesc/sourceDesc/biblStruct/monogr/title[@level='m']">
-                    <xsl:for-each select="teiHeader/fileDesc/sourceDesc/biblStruct/monogr/title[@level='m']">
-                        <xsl:call-template name="host"/>
-                    </xsl:for-each>
-                </xsl:when>
-                <xsl:when test="teiHeader/fileDesc/sourceDesc/biblStruct/monogr/title[@level='main']">
-                    <xsl:for-each select="teiHeader/fileDesc/sourceDesc/biblStruct/monogr/title[@level='main']">
-                        <xsl:call-template name="host"/>
-                    </xsl:for-each>
-                </xsl:when>
-                
-                <xsl:otherwise>
-                    <xsl:for-each select="teiHeader/fileDesc/sourceDesc/biblStruct/monogr/title">
-                        <xsl:call-template name="host"/>
-                    </xsl:for-each>
-                </xsl:otherwise>
-            </xsl:choose>
-            
-        </xsl:if>
+            <mods:relatedItem type="host">
+                <xsl:for-each select="teiHeader/fileDesc/sourceDesc/biblStruct/monogr">
+                    <xsl:call-template name="monoanalytic"/>
+                </xsl:for-each>
+            </mods:relatedItem>
 
+        </xsl:if>
 
     </xsl:template>
 
-    <xsl:template name="original" xmlns:mods="http://www.loc.gov/mods/v3">
-    <mods:relatedItem type="original">
-        <xsl:for-each select="ancestor::teiHeader/fileDesc/sourceDesc/biblStruct/analytic">
-            <xsl:call-template name="titleInfo"/>
-        </xsl:for-each>
-        <xsl:if test="ancestor::teiHeader/fileDesc/sourceDesc/biblStruct/analytic/author">
-            <xsl:for-each select="ancestor::teiHeader/fileDesc/sourceDesc/biblStruct/analytic/author">
+    <xsl:template name="monoanalytic" xmlns:mods="http://www.loc.gov/mods/v3">
+
+        <!-- CREATES AN EMPTY TITLEINFO NODE -->
+        <xsl:call-template name="titleInfo"/>
+
+        <xsl:if test="author">
+            <xsl:for-each select="author">
                 <xsl:if test="not(contains(., 'Unknown')) and not(contains(., 'unknown'))">
                     <xsl:choose>
                         <xsl:when test="orgName">
@@ -1055,77 +1053,28 @@
                 </xsl:if>
             </xsl:for-each>
         </xsl:if>
-        <xsl:if test="ancestor::teiHeader/fileDesc/sourceDesc/biblStruct/analytic/imprint">
+        <xsl:if test="imprint">
             <mods:originInfo>
-                <xsl:if test="ancestor::teiHeader/fileDesc/sourceDesc/biblStruct/analytic/imprint/pubPlace">
+                <xsl:if test="imprint/pubPlace">
                     <mods:place>
                         <mods:placeTerm>
-                            <xsl:value-of select="ancestor::teiHeader/fileDesc/sourceDesc/biblStruct/analytic/imprint/pubPlace"/>
+                            <xsl:value-of select="imprint/pubPlace"/>
                         </mods:placeTerm>
                     </mods:place>
                 </xsl:if>
-                <xsl:if test="ancestor::teiHeader/fileDesc/sourceDesc/biblStruct/analytic/imprint/publisher">
+                <xsl:if test="imprint/publisher">
                     <mods:publisher>
-                        <xsl:value-of select="ancestor::teiHeader/fileDesc/sourceDesc/biblStruct/analytic/imprint/publisher"/>
+                        <xsl:value-of select="imprint/publisher"/>
                     </mods:publisher>
                 </xsl:if>
-                <xsl:if test="ancestor::teiHeader/fileDesc/sourceDesc/biblStruct/analytic/imprint/date">
+                <xsl:if test="imprint/date">
                     <mods:dateIssued>
-                        <xsl:value-of select="ancestor::teiHeader/fileDesc/sourceDesc/biblStruct/analytic/imprint/date/@when"/>
+                        <xsl:value-of select="imprint/date/@when"/>
                     </mods:dateIssued>
                 </xsl:if>
             </mods:originInfo>
         </xsl:if>
-    </mods:relatedItem>
-</xsl:template>
 
-    <xsl:template name="host" xmlns:mods="http://www.loc.gov/mods/v3">
-        
-        <xsl:for-each select="teiHeader/fileDesc/sourceDesc/biblStruct/monogr/title[@level='m']">
-            <xsl:if test="not(contains(., 'Unknown'))">
-                
-                <mods:relatedItem type="host">
-                    <xsl:for-each select="ancestor::teiHeader/fileDesc/sourceDesc/biblStruct/monogr">
-                        <xsl:call-template name="titleInfo"/>
-                    </xsl:for-each>
-                    <xsl:if test="ancestor::teiHeader/fileDesc/sourceDesc/biblStruct/monogr/author">
-                        <xsl:for-each select="ancestor::teiHeader/fileDesc/sourceDesc/biblStruct/monogr/author">
-                            <xsl:choose>
-                                <xsl:when test="orgName">
-                                    <xsl:call-template name="corporateName"/>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <xsl:call-template name="personalName"/>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                        </xsl:for-each>
-                    </xsl:if>
-                    <xsl:if test="ancestor::teiHeader/fileDesc/sourceDesc/biblStruct/monogr/imprint">
-                        <mods:originInfo>
-                            <xsl:if test="ancestor::teiHeader/fileDesc/sourceDesc/biblStruct/monogr/imprint/pubPlace">
-                                <mods:place>
-                                    <mods:placeTerm>
-                                        <xsl:value-of select="ancestor::teiHeader/fileDesc/sourceDesc/biblStruct/monogr/imprint/pubPlace"/>
-                                    </mods:placeTerm>
-                                </mods:place>
-                            </xsl:if>
-                            <xsl:if test="ancestor::teiHeader/fileDesc/sourceDesc/biblStruct/monogr/imprint/publisher">
-                                <mods:publisher>
-                                    <xsl:value-of select="ancestor::teiHeader/fileDesc/sourceDesc/biblStruct/monogr/imprint/publisher"/>
-                                </mods:publisher>
-                            </xsl:if>
-                            <xsl:if test="ancestor::teiHeader/fileDesc/sourceDesc/biblStruct/monogr/imprint/date">
-                                <mods:dateIssued>
-                                    <xsl:value-of select="ancestor::teiHeader/fileDesc/sourceDesc/biblStruct/monogr/imprint/date/@when"/>
-                                </mods:dateIssued>
-                            </xsl:if>
-                        </mods:originInfo>
-                    </xsl:if>
-                </mods:relatedItem>
-            </xsl:if>
-        </xsl:for-each>
-        
     </xsl:template>
-
 
 </xsl:stylesheet>
