@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?oxygen RNGSchema="schemas/dorr_schema.rnc" type="compact"?>
+<?oxygen SCHSchema="schemas/exercise.isosch"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+    <teiHeader>
+        <fileDesc>
+            <titleStmt>
+                <title type="main">
+                    <persName>
+                        <forename>Alex</forename>
+                        <surname>Ming</surname>
+                        <genName>Jr.</genName>
+                        <roleName>Colonel 13th Reg. New York State Artillery</roleName>
+                    </persName>
+                    And
+                    <persName>
+                        <forename>Alexander</forename>
+                        <surname>Craston</surname>
+                        <roleName>Lieutenant Colonel of the 236 Reg. N.Y. Infantry</roleName>
+                    </persName>
+                    To
+                    <persName ref="#thomas_wilson_dorr">
+                        <forename type="first">Thomas</forename>
+                        <forename type="middle">Wilson</forename>
+                        <surname>Dorr</surname></persName>: an Electronic Transcription</title>
+                <title type="sub">
+                    The 
+                    <persName ref="#thomas_wilson_dorr">
+                        <forename type="first">Thomas</forename>
+                        <forename type="middle">Wilson</forename>
+                        <surname>Dorr</surname>
+                    </persName>
+                    Letters Project
+                </title>
+                <title type="short">
+                    Ming Jr. and Craston to TWD
+                </title>
+                <author>
+                    <persName><forename>Alex</forename> <surname>Ming</surname> <genName>Jr.</genName> <roleName>Colonel 13th Reg. New York State Artillery</roleName></persName> And <persName><forename>Alexander</forename> <surname>Craston</surname> <roleName>Lieutenant Colonel of the 236 Reg. N.Y. Infantry</roleName></persName>
+                </author>
+                <respStmt>
+                    <resp>Encoded by</resp>
+                    <persName ref="#marc_mestre">
+                        <forename>Marc</forename>
+                        <surname>Mestre</surname>
+                    </persName>
+                </respStmt>
+            </titleStmt>
+
+            <publicationStmt>
+                <publisher><name>Providence College Digital Publishing Services</name>,
+                        <name>Phillips Memorial Library</name></publisher>
+                <address>
+                <addrLine>Box 1841</addrLine>
+                    <addrLine>Providence College, Phillips Memorial Library</addrLine>
+                    <addrLine>1 Cunningham Square</addrLine>
+                    <addrLine>Providence, RI 02918</addrLine>
+                    <addrLine>USA</addrLine>
+                <addrLine>url:mailto:dps@providence.edu</addrLine>
+                <addrLine>url:http://www.providence.edu/LIBRARY/dps/Pages/default.aspx</addrLine>
+                <addrLine>401-865-1517</addrLine>
+                </address>
+                <pubPlace>Providence, Rhode Island</pubPlace>
+                <date>2012</date>
+                <availability>
+                    <licence target="http://creativecommons.org/licenses/by-sa/3.0/"> This electronic transcription is distributed under a Creative Commons Attribution-ShareAlike 3.0 Unported License
+                    </licence>
+                </availability>
+            </publicationStmt>
+
+            <seriesStmt>
+                <title level="s">The 
+                    <persName ref="#thomas_wilson_dorr">
+                        <forename type="first">Thomas</forename>
+                        <forename type="middle">Wilson</forename>
+                        <surname>Dorr</surname>
+                    </persName>
+                    Letters Project
+                </title>
+                <editor>Letters selected, edited, and transcribed from the original manuscripts by
+                        <persName ref="#erik_j_chaput">
+                            <roleName>Dr.</roleName>
+                            <forename>Erik J.</forename>
+                            <surname>Chaput</surname>
+                        </persName> 
+                        and
+                        <persName ref="#russell_desimone">
+                            <forename>Russell</forename>
+                            <surname>DeSimone</surname>
+                        </persName> 
+                        with the assistance of 
+                        <persName ref="#edward_e_andrews">
+                            <roleName>Dr.</roleName>
+                            <forename>Edward E.</forename>
+                            <surname>Andrews</surname>
+                        </persName>
+                </editor>
+            </seriesStmt>
+
+            <sourceDesc>
+                <bibl>
+                    <persName>
+                        <forename>Alex</forename>
+                        <surname>Ming</surname>
+                        <genName>Jr.</genName>
+                        <roleName>Colonel 13th Reg. New York State Artillery</roleName>
+                    </persName>
+                    And
+                    <persName>
+                        <forename>Alexander</forename>
+                        <surname>Craston</surname>
+                        <roleName>Lieutenant Colonel of the 236 Reg. N.Y. Infantry</roleName>
+                    </persName>
+                    To
+                    <persName ref="#thomas_wilson_dorr">
+                        <forename type="first">Thomas</forename>
+                        <forename type="middle">Wilson</forename>
+                        <surname>Dorr</surname>
+                    </persName>
+                    , <date when="1842-05-13">13 May 1842</date>.  
+                    <persName ref="#sidney_s_smith">Sidney Smith Rider</persName>
+                    Collection, <orgName ref="#hay">John Hay Library</orgName>, <orgName ref="#brown">Brown University.</orgName>
+                </bibl>
+                <msDesc>
+                    <msIdentifier>
+                        <repository>John Hay Library, Brown University</repository>
+                        <collection>The Road to Rebellion</collection>
+                    </msIdentifier>
+                    <physDesc>
+                        <objectDesc>
+                            <p>A one page manuscript letter. Envelope. </p>
+                        </objectDesc>
+                    </physDesc>
+                    <history>
+                        <origin>
+                            <origDate when="1842-05-13">May 13, 1842</origDate>
+                        </origin>
+                    </history>
+                </msDesc>
+            </sourceDesc>
+
+        </fileDesc>
+
+        <encodingDesc>
+            <projectDesc>
+                <p>The <persName ref="#thomas_wilson_dorr"><forename type="first">Thomas</forename> <forename type="middle">Wilson</forename> <surname>Dorr</surname></persName> Letters Project includes digital transcriptions of thirty letters from the Dorr Correspondence files in the <persName ref="#sidney_s_smith"><forename>Sidney S.</forename> <forename> Rider </forename> </persName>Collection at the <orgName ref="#hay">John Hay Library</orgName> (<orgName ref="#brown">Brown University</orgName>), the <persName ref="#james_f_simmons"><forename type="first">James</forename> <forename type="middle">Fowler</forename> <surname>Simmons</surname> </persName> Papers at the <orgName ref="#loc">Library of Congress</orgName>, the <orgName ref="#gli">Gilder Lehrman Institute</orgName>, and one letter from the private collection of <persName ref="#richard_slaney"><forename type="first">Richard</forename> <surname>Slaney</surname></persName>.  The goal of the project is to further the digital exploration of <placeName ref="#ri">Rhode Island</placeName> history through the combination of traditional scholarly editing with cutting edge digital technologies. These letters illustrate aspects of race, reform, antislavery and proslavery politics, and, of course, the <ref target="#dorr_rebellion">Dorr Rebellion</ref>. The selection of letters was governed by the notion of what would work best in the high school and college classroom, especially in terms of length and readability.  The head editors (<persName ref="#russell_desimone"><surname>DeSimone</surname> </persName> and <persName ref="#erik_j_chaput"><surname>Chaput</surname></persName>) also selected letters that had previously not been cited by historians of the <ref target="#dorr_rebellion">Dorr Rebellion</ref>.  The project was funded in part by a grant from the <orgName ref="#rich">Rhode Island Council for the Humanities</orgName>. </p>
+            </projectDesc>
+            
+            <samplingDecl>
+                <p>There are more than 2500 hundred letters that are known to exist that either pertain to the <ref target="#dorr_rebellion">Dorr Rebellion</ref> and its aftermath or the early life of the rebellion’s leader <persName ref="#thomas_wilson_dorr"><forename type="first">Thomas</forename> <forename type="middle">Wilson</forename> <surname>Dorr</surname></persName>.  In order to keep the number of letters selected for this project to a manageable number the editors focused on <persName ref="#thomas_wilson_dorr"><surname>Dorr</surname>’s </persName> early life (<orgName ref="#phillips_exeter">Philips Exeter Academy</orgName> and <orgName ref="#harvard">Harvard University</orgName>), his early law career, his political career in the mid-1830s, and his emergence as the leader of the reform movement that sought to revise <placeName ref="#ri">Rhode Island</placeName>'s archaic governing structure.</p>
+            </samplingDecl>
+            
+            <editorialDecl>                
+                <normalization>
+                    <p>Original spelling is retained.</p>
+                </normalization>                
+            </editorialDecl>
+        </encodingDesc>
+
+    </teiHeader>
+    <facsimile>
+        <graphic xml:id="letter20" url="/xtf/data/tei/bookreader/letter20/" />
+    </facsimile>
+
+    <!-- end TEI Header, cut and paste whole doc from last tag up -->
+
+    <text>
+        <front>
+            <titlePage>
+                <titlePart type="main">The Dorr Letters Project</titlePart>
+                <titlePart type="subtitle">Alex Ming Jr. and Alexander Craston to Thomas Wilson Dorr:<lb />Electronic Transcription</titlePart>
+            </titlePage>
+            <div type="introduction" xml:id="intro" org="uniform" part="N" sample="complete">
+                <head><title>Introduction</title></head>
+                <p>
+                    In this short letter, <persName><forename>Alexander</forename> <surname>Ming</surname></persName> and <persName><forename>Alexander</forename> <surname>Craston</surname></persName>,
+                    two radical <placeName ref="#ny">New York</placeName> labor leaders, promise to supply military aid. "<persName ref="#levi_d_slamm"><roleName>Quarter Master</roleName> <surname>Slamm</surname></persName>" refers to
+                    <persName ref="#levi_d_slamm"><forename>Levi</forename> <surname>Slamm</surname></persName>, a staunch supporter of <persName ref="#thomas_wilson_dorr"><surname>Dorr</surname></persName> and editor
+                    of the Democratic Republican New Era newspaper. <persName ref="#levi_d_slamm"><surname>Slamm</surname></persName> was the first editor to print <persName ref="#thomas_wilson_dorr"><surname>Dorr</surname></persName>'s explanation of
+                    the events following the state arsenal attack of <date when="--05-17">May 17</date>-<date when="--05-18">18</date>.
+                </p>
+            </div>
+        </front>
+        
+        <body>
+            
+            <div type="letter" xml:id="letter" org="uniform" part="N" sample="complete">
+                <head><title>Letter</title></head>
+                
+                <pb n="1" facs="/xtf/data/tei/bookreader/letter20/#page/1"/>
+                <opener>
+                    <dateline>
+                        <placeName ref="#ny">New York</placeName>, <date when="1842-05-13">May 13th, 1842</date>
+                    </dateline>
+                    <lb/>
+                    <persName ref="#thomas_wilson_dorr"><forename>Thomas W.</forename> <surname>Dorr</surname></persName> Governor of the State of <placeName ref="#ri">Rhode Island</placeName>:
+                    <lb/>
+                    <salute>Dear, Sir</salute>
+                </opener>
+                <p>
+                    Several military companies of this<lb /> city and vicinity having tendered their<lb /> services to us to form a military escort<lb /> to accompany you to <placeName ref="#providence_ri">Providence</placeName> we<lb /> have the honor to apprise you of the fact.<lb />
+                </p>
+                <p>
+                    This honor which they so much<lb /> desire we hope will meet with your<lb /> cheerful acceptance. <persName ref="#levi_d_slamm"><roleName>Quarter Master</roleName> <surname>Slamm</surname></persName><lb /> will await your reply.<lb />
+                </p>
+                <closer>
+                    <lb /><salute>With sentiments of the<lb /> highest respect, we are<lb /> respectfully,<lb /></salute>
+                    <lb /><signed><persName><forename>Alex</forename> <surname>Ming</surname> <genName>Jr.</genName> <roleName>Colonel 13th Reg. New York State Artillery</roleName></persName>
+                    <lb /><persName><forename>Alexander</forename> <surname>Craston</surname> <roleName>Lieutenant Colonel of the 236 Reg. N.Y. Infantry</roleName></persName>
+                    </signed>
+                </closer>
+                </div>
+        </body>
+        
+        <back>
+            <div type="questions" xml:id="questions" org="uniform" part="N" sample="complete">
+                <head><title>Questions</title></head>
+                <p>What were the consequences of openly accepting military aid?</p>
+            </div>
+        </back>
+    </text>
+</TEI>
