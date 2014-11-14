@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="xsl xs" version="2.0">
+<xsl:stylesheet version="2.0" 
+    xmlns:tei="http://www.tei-c.org/ns/1.0" 
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output indent="yes" method="xml"/>
     <xsl:strip-space elements="*"/>
     <xsl:preserve-space elements="persName editor respStmt"/>
@@ -402,43 +404,43 @@
             </xsl:when>
             <xsl:when test="tei:persName">
                 <xsl:for-each select="tei:persName">
-                <xsl:choose>
-                    <xsl:when test="tei:surname">
-                        <mods:namePart>
-                            <xsl:value-of select="tei:surname"/>
-                            <xsl:if test="tei:forename">
-                                <xsl:text>, </xsl:text>
-                                <xsl:choose>
-                                    <xsl:when test="tei:forename[@type='first']">
-                                        <xsl:value-of select="tei:forename[@type='first']"/>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:value-of select="tei:forename"/>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                                <xsl:if test="tei:forename[@type='middle']">
-                                    <xsl:text> </xsl:text>
-                                    <xsl:value-of select="tei:forename[@type='middle']"/>
+                    <xsl:choose>
+                        <xsl:when test="tei:surname">
+                            <mods:namePart>
+                                <xsl:value-of select="tei:surname"/>
+                                <xsl:if test="tei:forename">
+                                    <xsl:text>, </xsl:text>
+                                    <xsl:choose>
+                                        <xsl:when test="tei:forename[@type='first']">
+                                            <xsl:value-of select="tei:forename[@type='first']"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of select="tei:forename"/>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                    <xsl:if test="tei:forename[@type='middle']">
+                                        <xsl:text> </xsl:text>
+                                        <xsl:value-of select="tei:forename[@type='middle']"/>
+                                    </xsl:if>
                                 </xsl:if>
-                            </xsl:if>
-                        </mods:namePart>
-                    </xsl:when>
-                    <xsl:when test="tei:title">
-                        <mods:namePart>
-                            <xsl:for-each select="$persNameTitle">
-                                <xsl:call-template name="invertName"/>
-                            </xsl:for-each>
+                            </mods:namePart>
+                        </xsl:when>
+                        <xsl:when test="tei:title">
+                            <mods:namePart>
+                                <xsl:for-each select="$persNameTitle">
+                                    <xsl:call-template name="invertName"/>
+                                </xsl:for-each>
 
-                        </mods:namePart>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <mods:namePart>
-                            <xsl:for-each select=".">
-                                <xsl:call-template name="invertName"/>
-                            </xsl:for-each>
-                        </mods:namePart>
-                    </xsl:otherwise>
-                </xsl:choose>
+                            </mods:namePart>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <mods:namePart>
+                                <xsl:for-each select=".">
+                                    <xsl:call-template name="invertName"/>
+                                </xsl:for-each>
+                            </mods:namePart>
+                        </xsl:otherwise>
+                    </xsl:choose>
                 </xsl:for-each>
             </xsl:when>
             <xsl:when test="tei:name">
@@ -736,30 +738,30 @@
 
             <xsl:if test="tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date">
                 <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:publicationStmt">
-                    
-                        <xsl:choose>
-                            <xsl:when test="tei:date[@when]">
-                                <mods:dateCreated>
-                                    <xsl:value-of select="tei:date/@when"/>
-                                </mods:dateCreated>
-                            </xsl:when>
-                            <xsl:when test="tei:date[@notBefore]">
-                                <mods:dateCreated point='start' qualifier='approximate' keyDate='yes'>
-                                    <xsl:value-of select="tei:date/@notBefore"/>
-                                </mods:dateCreated>
-                                <mods:dateCreated point='end' qualifier='approximate'>
-                                    <xsl:value-of select="tei:date/@notAfter"/>
-                                </mods:dateCreated>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <mods:dateCreated>
+
+                    <xsl:choose>
+                        <xsl:when test="tei:date[@when]">
+                            <mods:dateCreated>
+                                <xsl:value-of select="tei:date/@when"/>
+                            </mods:dateCreated>
+                        </xsl:when>
+                        <xsl:when test="tei:date[@notBefore]">
+                            <mods:dateCreated point="start" qualifier="approximate" keyDate="yes">
+                                <xsl:value-of select="tei:date/@notBefore"/>
+                            </mods:dateCreated>
+                            <mods:dateCreated point="end" qualifier="approximate">
+                                <xsl:value-of select="tei:date/@notAfter"/>
+                            </mods:dateCreated>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <mods:dateCreated>
                                 <xsl:value-of select="$pubYear"/>
                                 <xsl:value-of select="$pubMonth"/>
                                 <xsl:value-of select="$pubDay"/>
-                                </mods:dateCreated>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    
+                            </mods:dateCreated>
+                        </xsl:otherwise>
+                    </xsl:choose>
+
                 </xsl:for-each>
             </xsl:if>
             <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/tei:p">
