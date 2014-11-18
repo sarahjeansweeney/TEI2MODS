@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="2.0" 
-    xmlns:tei="http://www.tei-c.org/ns/1.0" 
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:stylesheet version="1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output indent="yes" method="xml"/>
     <xsl:strip-space elements="*"/>
     <xsl:preserve-space elements="persName editor respStmt"/>
@@ -129,7 +127,9 @@
                 </mods:title>
             </xsl:if>
 
-            <xsl:for-each select="tei:title">
+            <!-- XSLT 1.0 : Error in expression not( ... found "[" -->
+
+            <!--<xsl:for-each select="tei:title">
                 <xsl:if
                     test="not(
                     .[@type='main']
@@ -153,7 +153,7 @@
                         <xsl:value-of select="."/>
                     </mods:title>
                 </xsl:if>
-            </xsl:for-each>
+            </xsl:for-each>-->
 
             <xsl:if test="tei:title[@type='sub']">
                 <mods:subTitle>
@@ -355,7 +355,7 @@
 
         <!-- REPSONSIBILITY STATEMENT -->
 
-        <xsl:if test="tei:teiHeader/tei:fileDesc/tei:titleStmt/respStmt">
+        <xsl:if test="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:respStmt">
             <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:respStmt">
                 <xsl:choose>
                     <xsl:when test="tei:orgName">
@@ -631,10 +631,12 @@
                 </xsl:if>
             </xsl:for-each>
 
-            <xsl:variable name="pubYear">
+            <!-- XSLT 1.0: REPLACE AND CONTAINS... Can I just drop all of this? -->
+
+            <!--<xsl:variable name="pubYear">
                 <xsl:value-of select="replace(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*(\d{4}).*', '$1')"/>
-            </xsl:variable>
-            <xsl:variable name="pubMonth">
+            </xsl:variable>-->
+            <!--<xsl:variable name="pubMonth">
                 <xsl:choose>
                     <xsl:when test="matches(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.[a-zA-Z]')">
                         <xsl:if test="contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'Jan') or contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'jan')">
@@ -687,54 +689,54 @@
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:choose>
-                            <!-- YYYY-MM-DD -->
+                            <!-\- YYYY-MM-DD -\->
                             <xsl:when test="matches(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{4}-\d{2}-\d{2}')">
                                 <xsl:value-of select="replace(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{4}-(\d{2})-\d{2}', '-$1')"/>
                             </xsl:when>
-                            <!-- MM-DD-YYYY -->
+                            <!-\- MM-DD-YYYY -\->
                             <xsl:when test="matches(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{2}-\d{2}-\d{4}')">
                                 <xsl:value-of select="replace(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*(\d{2})-\d{2}-\d{4}', '-$1')"/>
                             </xsl:when>
-                            <!-- YYYY-MM -->
+                            <!-\- YYYY-MM -\->
                             <xsl:when test="matches(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{4}-\d{2}')">
                                 <xsl:value-of select="replace(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{4}-(\d{2})', '-$1')"/>
                             </xsl:when>
-                            <!-- MM-YYYY -->
+                            <!-\- MM-YYYY -\->
                             <xsl:when test="matches(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{2}-\d{4}')">
                                 <xsl:value-of select="replace(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*(\d{2})-\d{4}', '-$1')"/>
                             </xsl:when>
-                            <!-- MM YYYY -->
+                            <!-\- MM YYYY -\->
                             <xsl:when test="matches(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{2}\s\d{4}')">
                                 <xsl:value-of select="replace(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*(\d{2})\s\d{4}', '-$1')"/>
                             </xsl:when>
                         </xsl:choose>
                     </xsl:otherwise>
                 </xsl:choose>
-            </xsl:variable>
-            <xsl:variable name="pubDay">
+            </xsl:variable>-->
+            <!--<xsl:variable name="pubDay">
                 <xsl:choose>
-                    <!-- YYYY-MM-DD -->
+                    <!-\- YYYY-MM-DD -\->
                     <xsl:when test="matches(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{4}-\d{2}-\d{2}')">
                         <xsl:value-of select="replace(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{4}-\d{2}-(\d{2})', '-$1')"/>
                     </xsl:when>
-                    <!-- MM-DD-YYYY -->
+                    <!-\- MM-DD-YYYY -\->
                     <xsl:when test="matches(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{2}-\d{2}-\d{4}')">
                         <xsl:value-of select="replace(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{2}-(\d{2})-\d{4}', '-$1')"/>
                     </xsl:when>
-                    <!-- DD-MONTH-YYYY -->
+                    <!-\- DD-MONTH-YYYY -\->
                     <xsl:when test="matches(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{2}-.*\w-\d{4}')">
                         <xsl:value-of select="replace(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*(\d{2})-.*\w-\d{4}', '-$1')"/>
                     </xsl:when>
-                    <!-- MONTH D, YYYY -->
+                    <!-\- MONTH D, YYYY -\->
                     <xsl:when test="matches(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\w\s\d{1}[,]\s\d{4}')">
                         <xsl:value-of select="replace(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\w\s(\d{1})[,]\s\d{4}', '-0$1')"/>
                     </xsl:when>
-                    <!-- MONTH DD, YYYY -->
+                    <!-\- MONTH DD, YYYY -\->
                     <xsl:when test="matches(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\w\s\d{2}[,]\s\d{4}')">
                         <xsl:value-of select="replace(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\w\s(\d{2})[,]\s\d{4}', '-$1')"/>
                     </xsl:when>
                 </xsl:choose>
-            </xsl:variable>
+            </xsl:variable>-->
 
             <xsl:if test="tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date">
                 <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:publicationStmt">
@@ -755,22 +757,25 @@
                         </xsl:when>
                         <xsl:otherwise>
                             <mods:dateCreated>
-                                <xsl:value-of select="$pubYear"/>
+                                <!--    <xsl:value-of select="$pubYear"/>
                                 <xsl:value-of select="$pubMonth"/>
-                                <xsl:value-of select="$pubDay"/>
+                                <xsl:value-of select="$pubDay"/>-->
                             </mods:dateCreated>
                         </xsl:otherwise>
                     </xsl:choose>
 
                 </xsl:for-each>
             </xsl:if>
-            <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/tei:p">
+
+            <!-- XSLT 1.0 : Needs to replace replace() with something else... -->
+
+            <!--<xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/tei:p">
                 <xsl:if test="contains(., 'Copyright') or contains(., 'copyright')">
                     <mods:copyrightDate>
                         <xsl:value-of select="replace(., '.*(\d{4}).*', '$1')"/>
                     </mods:copyrightDate>
                 </xsl:if>
-            </xsl:for-each>
+            </xsl:for-each>-->
 
 
             <!-- EDITION -->
@@ -826,101 +831,96 @@
 
     <!-- NOTES -->
 
-    <xsl:template name="notes" xmlns:mods="http://www.loc.gov/mods/v3">
 
-        <xsl:variable name="respStmtNote">
-            <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:titleStmt/respStmt">
-                <xsl:choose>
-                    <xsl:when test="tei:name">
-                        <xsl:value-of select="tei:name" separator=", "/>
-                    </xsl:when>
-                    <xsl:when test="tei:orgName">
-                        <xsl:value-of select="tei:orgName" separator=", "/>
-                    </xsl:when>
-                    <xsl:when test="tei:persName">
-                        <xsl:value-of select="tei:persName" separator=", "/>
-                    </xsl:when>
-                </xsl:choose>
-                <xsl:text> - </xsl:text>
-                <xsl:value-of select="tei:resp" separator=", "/>
-                <xsl:choose>
-                    <xsl:when test="position()=last()">
-                        <xsl:text>.</xsl:text>
-                    </xsl:when>
-                    <xsl:when test="position()=last()-1">
-                        <xsl:text>; and </xsl:text>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:text>; </xsl:text>
-                    </xsl:otherwise>
-                </xsl:choose>
+    <xsl:template name="encodingResp">
 
+        <xsl:for-each select="tei:resp">
+            <xsl:choose>
+                <xsl:when test="contains(., 'by') or contains(., 'By') or contains(., 'BY')">
+                    <xsl:choose>
+                        <xsl:when test="contains(., 'by ') or contains(., 'By ') or contains(., 'BY ')">
+                            <xsl:value-of select="."/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="."/>
+                            <xsl:text> </xsl:text>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="."/>
+                    <xsl:text>: </xsl:text>
+                </xsl:otherwise>
+
+            </xsl:choose>
+
+        </xsl:for-each>
+
+
+    </xsl:template>
+
+    <xsl:template name="encoders">
+
+        <xsl:if test="tei:name">
+
+            <xsl:for-each select="tei:name">
+                <xsl:call-template name="encodersName"/>
             </xsl:for-each>
-        </xsl:variable>
+
+            <xsl:if test="last()">
+                <xsl:text>. </xsl:text>
+            </xsl:if>
+
+        </xsl:if>
+
+        <xsl:if test="tei:persName">
+
+            <xsl:for-each select="tei:persName">
+                <xsl:call-template name="encodersName"/>
+            </xsl:for-each>
+
+            <xsl:if test="last()">
+                <xsl:text>. </xsl:text>
+            </xsl:if>
+        </xsl:if>
+
+        <xsl:if test="tei:orgName">
+
+            <xsl:for-each select="tei:orgName">
+                <xsl:call-template name="encodersName"/>
+            </xsl:for-each>
+
+            <xsl:if test="last()">
+                <xsl:text>. </xsl:text>
+            </xsl:if>
+        </xsl:if>
+
+    </xsl:template>
+
+    <xsl:template name="encodersName">
+        <xsl:value-of select="."/>
+        <xsl:if test="position() != last()">
+            <xsl:text>; </xsl:text>
+        </xsl:if>
+    </xsl:template>
+
+    <xsl:template name="notes" xmlns:mods="http://www.loc.gov/mods/v3">
 
         <xsl:if test="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:respStmt/tei:resp">
 
             <mods:note>
-                <xsl:text>Encoding Responsibilities: </xsl:text>
-                <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:respStmt/tei:resp">
-                    <xsl:choose>
-                        <xsl:when test="contains(., 'by')">
-                            <xsl:value-of select="."/>
-                            <xsl:if test="not(ends-with(., ' '))">
-                                <xsl:text> </xsl:text>
-                            </xsl:if>
-                            <xsl:choose>
-                                <xsl:when test="ancestor::tei:respStmt/tei:name">
-                                    <xsl:value-of select="normalize-space(ancestor::tei:respStmt/tei:name)" separator=", "/>
-                                </xsl:when>
-                                <xsl:when test="ancestor::tei:respStmt/tei:orgName">
-                                    <xsl:value-of select="normalize-space(ancestor::tei:respStmt/tei:orgName)" separator=", "/>
-                                </xsl:when>
-                                <xsl:when test="ancestor::tei:respStmt/tei:persName">
-                                    <xsl:value-of select="normalize-space(ancestor::tei:respStmt/tei:persName)" separator=", "/>
-                                </xsl:when>
-                            </xsl:choose>
-                            <xsl:choose>
-                                <xsl:when test="position()=last()">
-                                    <xsl:text>.</xsl:text>
-                                </xsl:when>
-                                <xsl:when test="position()=last()-1">
-                                    <xsl:text>. </xsl:text>
-                                </xsl:when>
-                            </xsl:choose>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:choose>
-                                <xsl:when test="ancestor::tei:respStmt/tei:name">
-                                    <xsl:value-of select="ancestor::tei:respStmt/tei:name" separator=", "/>
-                                </xsl:when>
-                                <xsl:when test="ancestor::tei:respStmt/tei:orgName">
-                                    <xsl:value-of select="ancestor::tei:respStmt/tei:orgName" separator=", "/>
-                                </xsl:when>
-                                <xsl:when test="ancestor::tei:respStmt/tei:persName">
-                                    <xsl:value-of select="ancestor::tei:respStmt/tei:persName" separator=", "/>
-                                </xsl:when>
-                            </xsl:choose>
-                            <xsl:text> - </xsl:text>
-                            <xsl:value-of select="ancestor::tei:respStmt/tei:resp" separator=", "/>
-                            <xsl:choose>
-                                <xsl:when test="position()=last()">
-                                    <xsl:text>.</xsl:text>
-                                </xsl:when>
-                                <xsl:when test="position()=last()-1">
-                                    <xsl:text>; and </xsl:text>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <xsl:text>; </xsl:text>
-                                </xsl:otherwise>
-                            </xsl:choose>
 
+                <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:respStmt">
 
-                        </xsl:otherwise>
-                    </xsl:choose>
+                    <xsl:call-template name="encodingResp"/>
+
+                    <xsl:call-template name="encoders"/>
 
                 </xsl:for-each>
 
+                <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:respStmt/tei:resp/tei:name">
+                    <xsl:number value="position()"/>
+                </xsl:for-each>
 
             </mods:note>
 
@@ -928,17 +928,34 @@
 
         <xsl:if test="tei:teiHeader/tei:fileDesc/tei:notesStmt/tei:note">
             <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:notesStmt/tei:note">
-
-                <xsl:if test="not(.[@type='ns'] | .[@type='relatedItem'])">
+                <!-- XSLT 1.0 : Error in expression not( ... found "[" -->
+                <!-- <xsl:if test="not(.[@type='ns'] | .[@type='relatedItem'])">
                     <mods:note>
                         <xsl:value-of select="."/>
                     </mods:note>
-                </xsl:if>
-
+                </xsl:if>-->
             </xsl:for-each>
         </xsl:if>
 
     </xsl:template>
+
+    <xsl:template name="resp">
+
+        <xsl:choose>
+            <xsl:when test="ancestor::tei:respStmt/tei:name">
+                <xsl:value-of select="normalize-space(ancestor::tei:respStmt/tei:name)"/>
+                <xsl:value-of select="normalize-space(ancestor::tei:respStmt/tei:resp)"/>
+            </xsl:when>
+            <xsl:when test="ancestor::tei:respStmt/tei:orgName">
+                <xsl:value-of select="normalize-space(ancestor::tei:respStmt/tei:orgName)"/>
+            </xsl:when>
+            <xsl:when test="ancestor::tei:respStmt/tei:persName">
+                <xsl:value-of select="normalize-space(ancestor::tei:respStmt/tei:persName)"/>
+            </xsl:when>
+        </xsl:choose>
+
+    </xsl:template>
+
 
     <xsl:template name="subjects" xmlns:mods="http://www.loc.gov/mods/v3">
         <xsl:if test="tei:teiHeader/tei:profileDesc/tei:textClass/tei:keywords/tei:term">
