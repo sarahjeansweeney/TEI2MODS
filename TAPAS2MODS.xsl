@@ -4,6 +4,7 @@
     <xsl:strip-space elements="*"/>
     <xsl:preserve-space elements="persName editor respStmt"/>
 
+    <!-- "Cannot process a result tree fragment as a node-set under XSLT 1.0" -->
 
     <xsl:variable name="persNameTitle">
         <xsl:for-each select="/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author/tei:persName">
@@ -112,48 +113,38 @@
 
         <mods:titleInfo>
 
-            <xsl:if test="tei:title[@type='main']">
-
-                <xsl:call-template name="nonSort"/>
-
-                <mods:title>
-                    <xsl:value-of select="normalize-space(tei:title[@type='main'])"/>
-                </mods:title>
-            </xsl:if>
-            <xsl:if test="tei:title[@type='marc245a']">
-                <xsl:call-template name="nonSort"/>
-                <mods:title>
-                    <xsl:value-of select="tei:title[@type='marc245a']"/>
-                </mods:title>
-            </xsl:if>
-
-            <!-- XSLT 1.0 : Error in expression not( ... found "[" -->
-
-            <!--<xsl:for-each select="tei:title">
-                <xsl:if
-                    test="not(
-                    .[@type='main']
-                    | .[@type='marc245a']
-                    | .[@type='sub']
-                    | .[@type='marc245b']
-                    | .[@type='marc245c']
-                    | .[@level='a']
-                    | .[@level='m']
-                    | .[@level='j']
-                    | .[@level='s']
-                    | .[@level='u']
-                    | .[@type='alt']
-                    | .[@type='short']
-                    | .[@type='trunc']
-                    | .[@type='filing']
-                    | .[@type='desc'])">
+            <xsl:choose>
+                
+                <xsl:when test="tei:title[@type='main']">
 
                     <xsl:call-template name="nonSort"/>
+
                     <mods:title>
-                        <xsl:value-of select="."/>
+                        <xsl:value-of select="normalize-space(tei:title[@type='main'])"/>
                     </mods:title>
-                </xsl:if>
-            </xsl:for-each>-->
+                </xsl:when>
+                <xsl:when test="tei:title[@type='marc245a']">
+                    <xsl:call-template name="nonSort"/>
+                    <mods:title>
+                        <xsl:value-of select="tei:title[@type='marc245a']"/>
+                    </mods:title>
+                </xsl:when>
+                
+                <xsl:when test="tei:title[2]">
+                    <xsl:call-template name="nonSort"/>
+                    <mods:title>
+                        <xsl:value-of select="tei:title[1]"/>
+                    </mods:title>
+                </xsl:when>
+                
+                <xsl:otherwise>
+                    <xsl:call-template name="nonSort"/>
+                    <mods:title>
+                        <xsl:value-of select="tei:title"/>
+                    </mods:title>
+                </xsl:otherwise>
+
+            </xsl:choose>
 
             <xsl:if test="tei:title[@type='sub']">
                 <mods:subTitle>
@@ -451,6 +442,9 @@
                             </mods:namePart>
                         </xsl:when>
                         <xsl:when test="tei:title">
+
+
+
                             <mods:namePart>
                                 <xsl:for-each select="$persNameTitle">
                                     <xsl:call-template name="invertName"/>
@@ -635,21 +629,6 @@
                     <mods:publisher>
                         <xsl:value-of select="normalize-space(tei:publisher)"/>
                     </mods:publisher>
-
-                    <!--  <xsl:choose>
-                        <xsl:when test="publisher/name">
-                            <xsl:for-each select="publisher/name">
-                                <mods:publisher>
-                                    <xsl:value-of select="."/>
-                                </mods:publisher>
-                            </xsl:for-each>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <mods:publisher>
-                                <xsl:value-of select="publisher"/>
-                            </mods:publisher>
-                        </xsl:otherwise>
-                    </xsl:choose>-->
 
                 </xsl:if>
                 <xsl:if test="tei:distributor">
@@ -1097,14 +1076,12 @@
                     <xsl:call-template name="monoanalytic"/>
                 </xsl:for-each>
             </mods:relatedItem>
-
         </xsl:if>
 
     </xsl:template>
 
     <xsl:template name="monoanalytic" xmlns:mods="http://www.loc.gov/mods/v3">
 
-        <!-- CREATES AN EMPTY TITLEINFO NODE -->
         <xsl:call-template name="titleInfo"/>
 
         <xsl:if test="tei:author">
@@ -1122,25 +1099,27 @@
             </xsl:for-each>
         </xsl:if>
         <xsl:if test="tei:imprint">
+            <xsl:for-each select="tei:imprint">
             <mods:originInfo>
-                <xsl:if test="tei:imprint/tei:pubPlace">
+                <xsl:if test="tei:pubPlace">
                     <mods:place>
                         <mods:placeTerm>
-                            <xsl:value-of select="tei:imprint/tei:pubPlace"/>
+                            <xsl:value-of select="tei:pubPlace"/>
                         </mods:placeTerm>
                     </mods:place>
                 </xsl:if>
-                <xsl:if test="tei:imprint/tei:publisher">
+                <xsl:if test="tei:publisher">
                     <mods:publisher>
-                        <xsl:value-of select="tei:imprint/tei:publisher"/>
+                        <xsl:value-of select="tei:publisher"/>
                     </mods:publisher>
                 </xsl:if>
-                <xsl:if test="tei:imprint/tei:date">
+                <xsl:if test="tei:date/@when">
                     <mods:dateIssued>
-                        <xsl:value-of select="tei:imprint/tei:date/@when"/>
+                        <xsl:value-of select="tei:date/@when"/>
                     </mods:dateIssued>
                 </xsl:if>
             </mods:originInfo>
+            </xsl:for-each>
         </xsl:if>
 
     </xsl:template>
