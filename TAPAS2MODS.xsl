@@ -358,17 +358,43 @@
         <xsl:if test="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:respStmt">
             <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:respStmt">
                 <xsl:choose>
-                    <xsl:when test="tei:orgName">
-                        <xsl:call-template name="corporateName"/>
+                    <xsl:when test="tei:name[2] or tei:persName[2] or tei:orgName[2]">
+                        <xsl:if test="tei:name">
+                            <xsl:for-each select="tei:name">
+                                <xsl:call-template name="personalName"/>
+                            </xsl:for-each>
+                        </xsl:if>
+                        <xsl:if test="tei:persName">
+                            <xsl:for-each select="tei:persName">
+                                <xsl:call-template name="personalName"/>
+                            </xsl:for-each>
+                        </xsl:if>
+                        <xsl:if test="tei:orgName">
+                            <xsl:for-each select="tei:orgName">
+                                <xsl:call-template name="personalName"/>
+                            </xsl:for-each>
+                        </xsl:if>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:call-template name="personalName"/>
+                        <xsl:choose>
+                            <xsl:when test="tei:orgName">
+                                <xsl:call-template name="corporateName"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:call-template name="personalName"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
                     </xsl:otherwise>
+
                 </xsl:choose>
+
+
             </xsl:for-each>
         </xsl:if>
 
     </xsl:template>
+
+    <xsl:template name="respStmt"> </xsl:template>
 
     <!-- PERSONAL NAMES -->
 
@@ -399,7 +425,6 @@
                         <xsl:value-of select="tei:nameLink"/>
                     </xsl:if>
                 </mods:namePart>
-
 
             </xsl:when>
             <xsl:when test="tei:persName">
@@ -461,6 +486,14 @@
                     </xsl:otherwise>
                 </xsl:choose>
 
+            </xsl:when>
+
+            <xsl:when test="ancestor-or-self::tei:name">
+                <mods:namePart>
+                    <xsl:for-each select=".">
+                        <xsl:call-template name="invertName"/>
+                    </xsl:for-each>
+                </mods:namePart>
             </xsl:when>
 
             <xsl:otherwise>
