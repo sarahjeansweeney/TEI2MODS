@@ -99,7 +99,7 @@
             </xsl:if>
 
             <!-- extension -->
-            <!--            <mods:extension displayLabel="TEI">
+                  <!--      <mods:extension displayLabel="TEI">
                 <xsl:copy-of select="/tei:TEI"/>
             </mods:extension>-->
 
@@ -951,21 +951,21 @@
         <xsl:if test="tei:teiHeader/tei:fileDesc/tei:notesStmt/tei:note">
 
             <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:notesStmt/tei:note">
-                
-                    <xsl:choose>
-                        <xsl:when test="./@type='ns'">
-                            <mods:note>
-                                <xsl:value-of select="."/>
-                            </mods:note>
-                        </xsl:when>
-                        <xsl:when test="./@type='relatedItem'"/>
-                        <xsl:otherwise>
-                            <mods:note>
+
+                <xsl:choose>
+                    <xsl:when test="./@type='ns'">
+                        <mods:note>
                             <xsl:value-of select="."/>
-                            </mods:note>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                
+                        </mods:note>
+                    </xsl:when>
+                    <xsl:when test="./@type='relatedItem'"/>
+                    <xsl:otherwise>
+                        <mods:note>
+                            <xsl:value-of select="."/>
+                        </mods:note>
+                    </xsl:otherwise>
+                </xsl:choose>
+
             </xsl:for-each>
 
         </xsl:if>
@@ -1084,7 +1084,11 @@
                         </xsl:for-each>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:value-of select="normalize-space(tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl)"/>
+                        <mods:titleInfo>
+                            <mods:title>
+                                <xsl:value-of select="normalize-space(tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl)"/>
+                            </mods:title>
+                        </mods:titleInfo>
                     </xsl:otherwise>
                 </xsl:choose>
             </mods:relatedItem>
