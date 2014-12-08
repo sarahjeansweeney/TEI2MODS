@@ -114,7 +114,7 @@
         <mods:titleInfo>
 
             <xsl:choose>
-                
+
                 <xsl:when test="tei:title[@type='main']">
 
                     <xsl:call-template name="nonSort"/>
@@ -129,14 +129,14 @@
                         <xsl:value-of select="tei:title[@type='marc245a']"/>
                     </mods:title>
                 </xsl:when>
-                
+
                 <xsl:when test="tei:title[2]">
                     <xsl:call-template name="nonSort"/>
                     <mods:title>
                         <xsl:value-of select="tei:title[1]"/>
                     </mods:title>
                 </xsl:when>
-                
+
                 <xsl:otherwise>
                     <xsl:call-template name="nonSort"/>
                     <mods:title>
@@ -939,14 +939,25 @@
         </xsl:if>
 
         <xsl:if test="tei:teiHeader/tei:fileDesc/tei:notesStmt/tei:note">
+
             <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:notesStmt/tei:note">
-                <!-- XSLT 1.0 : Error in expression not( ... found "[" -->
-                <!-- <xsl:if test="not(.[@type='ns'] | .[@type='relatedItem'])">
-                    <mods:note>
-                        <xsl:value-of select="."/>
-                    </mods:note>
-                </xsl:if>-->
+                
+                    <xsl:choose>
+                        <xsl:when test="./@type='ns'">
+                            <mods:note>
+                                <xsl:value-of select="."/>
+                            </mods:note>
+                        </xsl:when>
+                        <xsl:when test="./@type='relatedItem'"/>
+                        <xsl:otherwise>
+                            <mods:note>
+                            <xsl:value-of select="."/>
+                            </mods:note>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                
             </xsl:for-each>
+
         </xsl:if>
 
     </xsl:template>
@@ -1100,25 +1111,25 @@
         </xsl:if>
         <xsl:if test="tei:imprint">
             <xsl:for-each select="tei:imprint">
-            <mods:originInfo>
-                <xsl:if test="tei:pubPlace">
-                    <mods:place>
-                        <mods:placeTerm>
-                            <xsl:value-of select="tei:pubPlace"/>
-                        </mods:placeTerm>
-                    </mods:place>
-                </xsl:if>
-                <xsl:if test="tei:publisher">
-                    <mods:publisher>
-                        <xsl:value-of select="tei:publisher"/>
-                    </mods:publisher>
-                </xsl:if>
-                <xsl:if test="tei:date/@when">
-                    <mods:dateIssued>
-                        <xsl:value-of select="tei:date/@when"/>
-                    </mods:dateIssued>
-                </xsl:if>
-            </mods:originInfo>
+                <mods:originInfo>
+                    <xsl:if test="tei:pubPlace">
+                        <mods:place>
+                            <mods:placeTerm>
+                                <xsl:value-of select="tei:pubPlace"/>
+                            </mods:placeTerm>
+                        </mods:place>
+                    </xsl:if>
+                    <xsl:if test="tei:publisher">
+                        <mods:publisher>
+                            <xsl:value-of select="tei:publisher"/>
+                        </mods:publisher>
+                    </xsl:if>
+                    <xsl:if test="tei:date/@when">
+                        <mods:dateIssued>
+                            <xsl:value-of select="tei:date/@when"/>
+                        </mods:dateIssued>
+                    </xsl:if>
+                </mods:originInfo>
             </xsl:for-each>
         </xsl:if>
 
