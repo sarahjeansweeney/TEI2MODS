@@ -527,9 +527,19 @@
 
         <xsl:choose>
             <xsl:when test="not(contains(., ','))">
-                <xsl:value-of select="substring-after(., ' ')"/>
-                <xsl:text>, </xsl:text>
-                <xsl:value-of select="substring-before(., ' ')"/>
+                <xsl:choose>
+                    <xsl:when test="contains(., '.')">
+                        <xsl:value-of select="substring-after(., '. ')"/>
+                        <xsl:text>, </xsl:text>
+                        <xsl:value-of select="substring-before(., '.')"/>
+                        <xsl:text>.</xsl:text>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="substring-after(., ' ')"/>
+                        <xsl:text>, </xsl:text>
+                        <xsl:value-of select="substring-before(., ' ')"/>
+                    </xsl:otherwise>
+                </xsl:choose>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:value-of select="."/>
