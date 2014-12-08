@@ -18,11 +18,17 @@
 
             <!-- titleInfo -->
 
-            <xsl:if test="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title">
-                <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:titleStmt">
-                    <xsl:call-template name="titleInfo"/>
-                </xsl:for-each>
-            </xsl:if>
+            <mods:titleInfo>
+                <xsl:if test="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type='filing']">
+                    <mods:nonSort>
+                        <xsl:value-of select="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type='filing']"/>
+                    </mods:nonSort>
+                </xsl:if>
+                
+                <mods:title>
+                    <xsl:value-of select="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[1]"/>
+                </mods:title>
+            </mods:titleInfo>
 
             <!-- name -->
 
@@ -108,162 +114,24 @@
     </xsl:template>
 
     <!-- TITLE -->
+
     <xsl:template name="titleInfo" xmlns:mods="http://www.loc.gov/mods/v3">
+        <xsl:if test="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title">
+            <mods:titleInfo>
+                <xsl:if test="tei:title[@type='filing']">
+                    <mods:nonSort>
+                        <xsl:value-of select="tei:title[@type='filing']"/>
+                    </mods:nonSort>
+                </xsl:if>
 
-
-        <mods:titleInfo>
-
-            <xsl:choose>
-
-                <xsl:when test="tei:title[@type='main']">
-
-                    <xsl:call-template name="nonSort"/>
-
-                    <mods:title>
-                        <xsl:value-of select="normalize-space(tei:title[@type='main'])"/>
-                    </mods:title>
-                </xsl:when>
-                <xsl:when test="tei:title[@type='marc245a']">
-                    <xsl:call-template name="nonSort"/>
-                    <mods:title>
-                        <xsl:value-of select="tei:title[@type='marc245a']"/>
-                    </mods:title>
-                </xsl:when>
-
-                <xsl:when test="tei:title[2]">
-                    <xsl:call-template name="nonSort"/>
-                    <mods:title>
-                        <xsl:value-of select="tei:title[1]"/>
-                    </mods:title>
-                </xsl:when>
-
-                <xsl:otherwise>
-                    <xsl:call-template name="nonSort"/>
-                    <mods:title>
-                        <xsl:value-of select="tei:title"/>
-                    </mods:title>
-                </xsl:otherwise>
-
-            </xsl:choose>
-
-            <xsl:if test="tei:title[@type='sub']">
-                <mods:subTitle>
-                    <xsl:value-of select="normalize-space(tei:title[@type='sub'])"/>
-                </mods:subTitle>
-            </xsl:if>
-            <xsl:if test="tei:title[@type='marc245b']">
-                <mods:subTitle>
-                    <xsl:value-of select="tei:title[@type='marc245b']"/>
-                </mods:subTitle>
-            </xsl:if>
-        </mods:titleInfo>
-
-        <xsl:if test="tei:title[@level='a']">
-            <mods:titleInfo displayLabel="Analytic Title">
-
-                <xsl:call-template name="nonSort"/>
                 <mods:title>
-                    <xsl:value-of select="normalize-space(tei:title[@level='a'])"/>
+                    <xsl:value-of select="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[1]"/>
                 </mods:title>
             </mods:titleInfo>
-        </xsl:if>
 
-        <xsl:if test="tei:title[@level='m']">
-            <mods:titleInfo displayLabel="Monographic Title">
-                <xsl:call-template name="nonSort"/>
-                <xsl:choose>
-                    <xsl:when test="tei:title[@level='m'][@type='main']">
-
-                        <mods:title>
-                            <xsl:value-of select="normalize-space(tei:title[@level='m'][@type='main'])"/>
-                        </mods:title>
-                    </xsl:when>
-                    <xsl:when test="tei:title[@level='m'][@type='marc245a']">
-                        <mods:title>
-                            <xsl:value-of select="normalize-space(tei:title[@level='m'][@type='marc245a'])"/>
-                        </mods:title>
-                    </xsl:when>
-
-                    <xsl:otherwise>
-                        <mods:title>
-                            <xsl:value-of select="normalize-space(tei:title[@level='m'])"/>
-                        </mods:title>
-                    </xsl:otherwise>
-                </xsl:choose>
-                <xsl:choose>
-                    <xsl:when test="tei:title[@level='m'][@type='sub']">
-                        <mods:subTitle>
-                            <xsl:value-of select="normalize-space(tei:title[@level='m'][@type='sub'])"/>
-                        </mods:subTitle>
-                    </xsl:when>
-                    <xsl:when test="tei:title[@level='m'][@type='marc245b']">
-                        <mods:title>
-                            <xsl:value-of select="normalize-space(tei:title[@level='m'][@type='marc245b'])"/>
-                        </mods:title>
-                    </xsl:when>
-                </xsl:choose>
-            </mods:titleInfo>
         </xsl:if>
-
-        <xsl:if test="tei:title[@level='j']">
-            <mods:titleInfo displayLabel="Journal Title">
-                <xsl:call-template name="nonSort"/>
-                <mods:title>
-                    <xsl:value-of select="normalize-space(tei:title[@level='j'])"/>
-                </mods:title>
-            </mods:titleInfo>
-        </xsl:if>
-        <xsl:if test="tei:title[@level='u']">
-            <mods:titleInfo displayLabel="Unpublished Title">
-                <xsl:call-template name="nonSort"/>
-                <mods:title>
-                    <xsl:value-of select="normalize-space(tei:title[@level='u'])"/>
-                </mods:title>
-            </mods:titleInfo>
-        </xsl:if>
-
-        <xsl:if test="tei:title[@type='alt']">
-            <mods:titleInfo type="alternative" displayLabel="Alternative Title">
-                <xsl:call-template name="nonSort"/>
-                <mods:title>
-                    <xsl:value-of select="normalize-space(tei:title[@type='alt'])"/>
-                </mods:title>
-            </mods:titleInfo>
-        </xsl:if>
-        <xsl:if test="tei:title[@type='short']">
-            <mods:titleInfo type="abbreviated" displayLabel="Abbreviated Title">
-                <xsl:call-template name="nonSort"/>
-                <mods:title>
-                    <xsl:value-of select="normalize-space(tei:title[@type='short'])"/>
-                </mods:title>
-            </mods:titleInfo>
-        </xsl:if>
-        <xsl:if test="tei:title[@type='trunc']">
-            <mods:titleInfo type="abbreviated" displayLabel="Abbreviated Title">
-                <xsl:call-template name="nonSort"/>
-                <mods:title>
-                    <xsl:value-of select="normalize-space(tei:title[@type='trunc'])"/>
-                </mods:title>
-            </mods:titleInfo>
-        </xsl:if>
-        <xsl:if test="tei:title[@type='desc']">
-            <mods:titleInfo displayLabel="Abbreviated Title">
-                <xsl:call-template name="nonSort"/>
-                <mods:title>
-                    <xsl:value-of select="normalize-space(tei:title[@type='desc'])"/>
-                </mods:title>
-            </mods:titleInfo>
-        </xsl:if>
-
     </xsl:template>
 
-    <xsl:template name="nonSort" xmlns:mods="http://www.loc.gov/mods/v3">
-        <xsl:if test="tei:title[@type='filing']">
-            <mods:nonSort>
-                <xsl:value-of select="tei:title[@type='filing']"/>
-            </mods:nonSort>
-        </xsl:if>
-    </xsl:template>
 
     <!-- CREATORS -->
 
@@ -395,10 +263,6 @@
             <xsl:call-template name="personalNamePart"/>
 
             <xsl:call-template name="nameRole"/>
-
-            <xsl:call-template name="nameAffiliation"/>
-
-            <xsl:call-template name="nickname"/>
 
         </mods:name>
     </xsl:template>
@@ -575,26 +439,6 @@
         </mods:role>
     </xsl:template>
 
-    <xsl:template name="nameAffiliation" xmlns:mods="http://www.loc.gov/mods/v3">
-        <xsl:if test="tei:affiliation">
-            <mods:affiliation>
-                <xsl:value-of select="tei:affiliation"/>
-            </mods:affiliation>
-        </xsl:if>
-    </xsl:template>
-
-    <xsl:template name="nickname" xmlns:mods="http://www.loc.gov/mods/v3">
-        <xsl:if test="tei:addName">
-
-            <mods:description>
-                <xsl:text>Also known as </xsl:text>
-                <xsl:value-of select="tei:addName"/>
-                <xsl:text>.</xsl:text>
-            </mods:description>
-        </xsl:if>
-
-    </xsl:template>
-
     <!-- CORPORATE NAMES -->
 
     <xsl:template name="corporateName" xmlns:mods="http://www.loc.gov/mods/v3">
@@ -615,7 +459,7 @@
         <mods:originInfo xmlns:mods="http://www.loc.gov/mods/v3">
 
             <xsl:if test="tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:pubPlace">
-
+                <!-- REVIEW -->
                 <mods:place>
                     <xsl:if test="tei:country">
                         <mods:placeTerm>
@@ -639,7 +483,6 @@
                     <mods:publisher>
                         <xsl:value-of select="normalize-space(tei:publisher)"/>
                     </mods:publisher>
-
                 </xsl:if>
                 <xsl:if test="tei:distributor">
                     <mods:publisher>
@@ -666,9 +509,14 @@
                             <mods:dateCreated point="start" qualifier="approximate" keyDate="yes">
                                 <xsl:value-of select="tei:date/@notBefore"/>
                             </mods:dateCreated>
-                            <mods:dateCreated point="end" qualifier="approximate">
-                                <xsl:value-of select="tei:date/@notAfter"/>
-                            </mods:dateCreated>
+
+                            <!-- TEST -->
+
+                            <xsl:if test="tei:date[@notAfter]">
+                                <mods:dateCreated point="end" qualifier="approximate">
+                                    <xsl:value-of select="tei:date/@notAfter"/>
+                                </mods:dateCreated>
+                            </xsl:if>
                         </xsl:when>
                     </xsl:choose>
 
@@ -677,7 +525,7 @@
 
 
             <!-- EDITION -->
-
+<!-- TEST -->
             <xsl:if test="tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition">
                 <mods:edition>
                     <xsl:choose>
@@ -983,7 +831,18 @@
 
     <xsl:template name="monoanalytic" xmlns:mods="http://www.loc.gov/mods/v3">
 
-        <xsl:call-template name="titleInfo"/>
+        <mods:titleInfo>
+            <xsl:if test="tei:title[@type='filing']">
+                <mods:nonSort>
+                    <xsl:value-of select="tei:title[@type='filing']"/>
+                </mods:nonSort>
+            </xsl:if>
+            
+            <mods:title>
+                <xsl:value-of select="tei:title[1]"/>
+            </mods:title>
+        </mods:titleInfo>
+        
 
         <xsl:if test="tei:author">
             <xsl:for-each select="tei:author">
