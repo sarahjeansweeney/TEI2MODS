@@ -99,7 +99,7 @@
             </xsl:if>
 
             <!-- extension -->
-                  <!--      <mods:extension displayLabel="TEI">
+            <!--      <mods:extension displayLabel="TEI">
                 <xsl:copy-of select="/tei:TEI"/>
             </mods:extension>-->
 
@@ -653,113 +653,6 @@
                 </xsl:if>
             </xsl:for-each>
 
-            <!-- XSLT 1.0: REPLACE AND CONTAINS... Can I just drop all of this? -->
-
-            <!--<xsl:variable name="pubYear">
-                <xsl:value-of select="replace(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*(\d{4}).*', '$1')"/>
-            </xsl:variable>-->
-            <!--<xsl:variable name="pubMonth">
-                <xsl:choose>
-                    <xsl:when test="matches(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.[a-zA-Z]')">
-                        <xsl:if test="contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'Jan') or contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'jan')">
-                            <xsl:text>-01</xsl:text>
-                        </xsl:if>
-
-                        <xsl:if test="contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'Feb') or contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'feb')">
-                            <xsl:text>-02</xsl:text>
-                        </xsl:if>
-
-                        <xsl:if test="contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'Mar') or contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'mar')">
-                            <xsl:text>-03</xsl:text>
-                        </xsl:if>
-
-                        <xsl:if test="contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'Apr') or contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'apr')">
-                            <xsl:text>-04</xsl:text>
-                        </xsl:if>
-
-                        <xsl:if test="contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'May') or contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'may')">
-                            <xsl:text>-05</xsl:text>
-                        </xsl:if>
-
-                        <xsl:if test="contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'Jun') or contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'jun')">
-                            <xsl:text>-06</xsl:text>
-                        </xsl:if>
-
-                        <xsl:if test="contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'Jul') or contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'jul')">
-                            <xsl:text>-07</xsl:text>
-                        </xsl:if>
-
-                        <xsl:if test="contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'Aug') or contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'aug')">
-                            <xsl:text>-08</xsl:text>
-                        </xsl:if>
-
-                        <xsl:if test="contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'Sep') or contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'sep')">
-                            <xsl:text>-09</xsl:text>
-                        </xsl:if>
-
-                        <xsl:if test="contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'Oct') or contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'oct')">
-                            <xsl:text>-10</xsl:text>
-                        </xsl:if>
-
-                        <xsl:if test="contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'Nov') or contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'nov')">
-                            <xsl:text>-11</xsl:text>
-                        </xsl:if>
-
-                        <xsl:if test="contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'Dec') or contains(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, 'dec')">
-                            <xsl:text>-12</xsl:text>
-                        </xsl:if>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:choose>
-                            <!-\- YYYY-MM-DD -\->
-                            <xsl:when test="matches(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{4}-\d{2}-\d{2}')">
-                                <xsl:value-of select="replace(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{4}-(\d{2})-\d{2}', '-$1')"/>
-                            </xsl:when>
-                            <!-\- MM-DD-YYYY -\->
-                            <xsl:when test="matches(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{2}-\d{2}-\d{4}')">
-                                <xsl:value-of select="replace(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*(\d{2})-\d{2}-\d{4}', '-$1')"/>
-                            </xsl:when>
-                            <!-\- YYYY-MM -\->
-                            <xsl:when test="matches(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{4}-\d{2}')">
-                                <xsl:value-of select="replace(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{4}-(\d{2})', '-$1')"/>
-                            </xsl:when>
-                            <!-\- MM-YYYY -\->
-                            <xsl:when test="matches(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{2}-\d{4}')">
-                                <xsl:value-of select="replace(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*(\d{2})-\d{4}', '-$1')"/>
-                            </xsl:when>
-                            <!-\- MM YYYY -\->
-                            <xsl:when test="matches(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{2}\s\d{4}')">
-                                <xsl:value-of select="replace(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*(\d{2})\s\d{4}', '-$1')"/>
-                            </xsl:when>
-                        </xsl:choose>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </xsl:variable>-->
-            <!--<xsl:variable name="pubDay">
-                <xsl:choose>
-                    <!-\- YYYY-MM-DD -\->
-                    <xsl:when test="matches(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{4}-\d{2}-\d{2}')">
-                        <xsl:value-of select="replace(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{4}-\d{2}-(\d{2})', '-$1')"/>
-                    </xsl:when>
-                    <!-\- MM-DD-YYYY -\->
-                    <xsl:when test="matches(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{2}-\d{2}-\d{4}')">
-                        <xsl:value-of select="replace(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{2}-(\d{2})-\d{4}', '-$1')"/>
-                    </xsl:when>
-                    <!-\- DD-MONTH-YYYY -\->
-                    <xsl:when test="matches(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\d{2}-.*\w-\d{4}')">
-                        <xsl:value-of select="replace(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*(\d{2})-.*\w-\d{4}', '-$1')"/>
-                    </xsl:when>
-                    <!-\- MONTH D, YYYY -\->
-                    <xsl:when test="matches(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\w\s\d{1}[,]\s\d{4}')">
-                        <xsl:value-of select="replace(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\w\s(\d{1})[,]\s\d{4}', '-0$1')"/>
-                    </xsl:when>
-                    <!-\- MONTH DD, YYYY -\->
-                    <xsl:when test="matches(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\w\s\d{2}[,]\s\d{4}')">
-                        <xsl:value-of select="replace(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date, '.*\w\s(\d{2})[,]\s\d{4}', '-$1')"/>
-                    </xsl:when>
-                </xsl:choose>
-            </xsl:variable>-->
-
             <xsl:if test="tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date">
                 <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:publicationStmt">
 
@@ -777,27 +670,10 @@
                                 <xsl:value-of select="tei:date/@notAfter"/>
                             </mods:dateCreated>
                         </xsl:when>
-                        <xsl:otherwise>
-                            <mods:dateCreated>
-                                <!--    <xsl:value-of select="$pubYear"/>
-                                <xsl:value-of select="$pubMonth"/>
-                                <xsl:value-of select="$pubDay"/>-->
-                            </mods:dateCreated>
-                        </xsl:otherwise>
                     </xsl:choose>
 
                 </xsl:for-each>
             </xsl:if>
-
-            <!-- XSLT 1.0 : Needs to replace replace() with something else... -->
-
-            <!--<xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/tei:p">
-                <xsl:if test="contains(., 'Copyright') or contains(., 'copyright')">
-                    <mods:copyrightDate>
-                        <xsl:value-of select="replace(., '.*(\d{4}).*', '$1')"/>
-                    </mods:copyrightDate>
-                </xsl:if>
-            </xsl:for-each>-->
 
 
             <!-- EDITION -->
