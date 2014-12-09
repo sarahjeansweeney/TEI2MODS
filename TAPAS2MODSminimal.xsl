@@ -95,9 +95,9 @@
             </xsl:if>
 
             <!-- extension -->
-            <!--      <mods:extension displayLabel="TEI">
+                  <mods:extension displayLabel="TEI">
                 <xsl:copy-of select="/tei:TEI"/>
-            </mods:extension>-->
+            </mods:extension>
 
             <mods:recordInfo>
                 <mods:recordContentSource>TEI Archive, Publishing, and Access Service (TAPAS)</mods:recordContentSource>
@@ -669,7 +669,6 @@
 
         </xsl:if>
 
-        <!-- LEFT OFF HERE -->
         <xsl:if test="tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:p">
             <mods:note>
                 <xsl:value-of select="normalize-space(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:p)"/>
