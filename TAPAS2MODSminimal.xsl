@@ -4,13 +4,10 @@
     <xsl:strip-space elements="*"/>
     <xsl:preserve-space elements="persName editor respStmt"/>
 
-    <!-- "Cannot process a result tree fragment as a node-set under XSLT 1.0" -->
+    <!--<xsl:if test="/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author/tei:persName[2]">-->
 
-    <xsl:variable name="persNameTitle">
-        <xsl:for-each select="/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author/tei:persName">
-            <xsl:value-of select="text()"/>
-        </xsl:for-each>
-    </xsl:variable>
+    <!--</xsl:if>-->
+
 
     <xsl:template match="/tei:TEI">
 
@@ -24,7 +21,7 @@
                         <xsl:value-of select="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type='filing']"/>
                     </mods:nonSort>
                 </xsl:if>
-                
+
                 <mods:title>
                     <xsl:value-of select="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[1]"/>
                 </mods:title>
@@ -112,26 +109,6 @@
         </mods:mods>
 
     </xsl:template>
-
-    <!-- TITLE -->
-
-    <xsl:template name="titleInfo" xmlns:mods="http://www.loc.gov/mods/v3">
-        <xsl:if test="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title">
-            <mods:titleInfo>
-                <xsl:if test="tei:title[@type='filing']">
-                    <mods:nonSort>
-                        <xsl:value-of select="tei:title[@type='filing']"/>
-                    </mods:nonSort>
-                </xsl:if>
-
-                <mods:title>
-                    <xsl:value-of select="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[1]"/>
-                </mods:title>
-            </mods:titleInfo>
-
-        </xsl:if>
-    </xsl:template>
-
 
     <!-- CREATORS -->
 
@@ -253,8 +230,6 @@
 
     </xsl:template>
 
-    <xsl:template name="respStmt"> </xsl:template>
-
     <!-- PERSONAL NAMES -->
 
     <xsl:template name="personalName" xmlns:mods="http://www.loc.gov/mods/v3">
@@ -282,6 +257,9 @@
                 </mods:namePart>
 
             </xsl:when>
+            
+            <!-- ADJUST TO ACCOMODATE MULTIPLE PERSNAMES -->
+            
             <xsl:when test="tei:persName">
                 <xsl:for-each select="tei:persName">
                     <xsl:choose>
@@ -307,14 +285,10 @@
                         </xsl:when>
                         <xsl:when test="tei:title">
 
-
-
                             <mods:namePart>
-                                <xsl:for-each select="$persNameTitle">
-                                    <xsl:call-template name="invertName"/>
-                                </xsl:for-each>
-
+                                <xsl:value-of select="normalize-space(.)"/>
                             </mods:namePart>
+
                         </xsl:when>
                         <xsl:otherwise>
                             <mods:namePart>
@@ -459,18 +433,8 @@
         <mods:originInfo xmlns:mods="http://www.loc.gov/mods/v3">
 
             <xsl:if test="tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:pubPlace">
-                <!-- REVIEW -->
+
                 <mods:place>
-                    <xsl:if test="tei:country">
-                        <mods:placeTerm>
-                            <xsl:value-of select="tei:country"/>
-                        </mods:placeTerm>
-                    </xsl:if>
-                    <xsl:if test="tei:address/tei:addrLine">
-                        <mods:placeTerm>
-                            <xsl:value-of select="tei:address/tei:addrLine"/>
-                        </mods:placeTerm>
-                    </xsl:if>
                     <mods:placeTerm>
                         <xsl:value-of select="normalize-space(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:pubPlace)"/>
                     </mods:placeTerm>
@@ -501,23 +465,26 @@
 
                     <xsl:choose>
                         <xsl:when test="tei:date[@when]">
-                            <mods:dateCreated>
+                            <mods:dateCreated keyDate="yes">
                                 <xsl:value-of select="tei:date/@when"/>
                             </mods:dateCreated>
                         </xsl:when>
-                        <xsl:when test="tei:date[@notBefore]">
-                            <mods:dateCreated point="start" qualifier="approximate" keyDate="yes">
-                                <xsl:value-of select="tei:date/@notBefore"/>
-                            </mods:dateCreated>
+                        <xsl:when test="tei:date[@notBefore] or tei:date[@notAfter]">
 
-                            <!-- TEST -->
+                            <xsl:if test="tei:date[@notBefore]">
+                                <mods:dateCreated point="start" qualifier="approximate" keyDate="yes">
+                                    <xsl:value-of select="tei:date/@notBefore"/>
+                                </mods:dateCreated>
+                            </xsl:if>
 
                             <xsl:if test="tei:date[@notAfter]">
                                 <mods:dateCreated point="end" qualifier="approximate">
                                     <xsl:value-of select="tei:date/@notAfter"/>
                                 </mods:dateCreated>
                             </xsl:if>
+
                         </xsl:when>
+
                     </xsl:choose>
 
                 </xsl:for-each>
@@ -525,7 +492,7 @@
 
 
             <!-- EDITION -->
-<!-- TEST -->
+            <!-- TEST -->
             <xsl:if test="tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition">
                 <mods:edition>
                     <xsl:choose>
@@ -696,24 +663,6 @@
 
     </xsl:template>
 
-    <xsl:template name="resp">
-
-        <xsl:choose>
-            <xsl:when test="ancestor::tei:respStmt/tei:name">
-                <xsl:value-of select="normalize-space(ancestor::tei:respStmt/tei:name)"/>
-                <xsl:value-of select="normalize-space(ancestor::tei:respStmt/tei:resp)"/>
-            </xsl:when>
-            <xsl:when test="ancestor::tei:respStmt/tei:orgName">
-                <xsl:value-of select="normalize-space(ancestor::tei:respStmt/tei:orgName)"/>
-            </xsl:when>
-            <xsl:when test="ancestor::tei:respStmt/tei:persName">
-                <xsl:value-of select="normalize-space(ancestor::tei:respStmt/tei:persName)"/>
-            </xsl:when>
-        </xsl:choose>
-
-    </xsl:template>
-
-
     <xsl:template name="subjects" xmlns:mods="http://www.loc.gov/mods/v3">
         <xsl:if test="tei:teiHeader/tei:profileDesc/tei:textClass/tei:keywords/tei:term">
             <xsl:choose>
@@ -837,12 +786,12 @@
                     <xsl:value-of select="tei:title[@type='filing']"/>
                 </mods:nonSort>
             </xsl:if>
-            
+
             <mods:title>
                 <xsl:value-of select="tei:title[1]"/>
             </mods:title>
         </mods:titleInfo>
-        
+
 
         <xsl:if test="tei:author">
             <xsl:for-each select="tei:author">
