@@ -435,7 +435,7 @@
 
     <xsl:template name="originInfo">
 
-        <xsl:if test="tei:teiHeader/tei:fileDesc/tei:publicationStmt">
+        <xsl:if test="tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:pubPlace or tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:publisher or tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:distributor or tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:authority or tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date">
 
             <mods:originInfo xmlns:mods="http://www.loc.gov/mods/v3">
 
