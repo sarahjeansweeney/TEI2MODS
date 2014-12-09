@@ -258,10 +258,9 @@
 
             </xsl:when>
             
-            <!-- ADJUST TO ACCOMODATE MULTIPLE PERSNAMES -->
-            
             <xsl:when test="tei:persName">
-                <xsl:for-each select="tei:persName">
+                
+                <xsl:for-each select="tei:persName[1]">
                     <xsl:choose>
                         <xsl:when test="tei:surname">
                             <mods:namePart>
@@ -299,7 +298,13 @@
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:for-each>
+                
             </xsl:when>
+            
+            <xsl:when test="tei:persName">
+                <xsl:text>test</xsl:text>
+            </xsl:when>
+            
             <xsl:when test="tei:name">
 
                 <xsl:choose>
@@ -343,8 +348,8 @@
             </xsl:for-each>
         </xsl:if>
 
-        <xsl:if test="tei:persName">
-            <xsl:for-each select="tei:persName/tei:title">
+        <xsl:if test="tei:persName/tei:title">
+            <xsl:for-each select="tei:persName[1]/tei:title">
                 <mods:namePart type="termsOfAddress">
                     <xsl:value-of select="."/>
                 </mods:namePart>
