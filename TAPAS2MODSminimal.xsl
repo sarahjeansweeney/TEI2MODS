@@ -106,6 +106,14 @@
                 <xsl:copy-of select="/tei:TEI"/>
             </mods:extension>-->
 
+<mods:recordInfo>
+    <mods:recordContentSource>TEI Archive, Publishing, and Access Service (TAPAS)</mods:recordContentSource>
+    <mods:recordOrigin>Converted from TEI</mods:recordOrigin>
+    <mods:languageOfCataloging>
+        <mods:languageTerm type="text" authority="iso639-2b">English</mods:languageTerm>
+    </mods:languageOfCataloging>
+</mods:recordInfo>
+
         </mods:mods>
 
     </xsl:template>
@@ -301,10 +309,6 @@
                 
             </xsl:when>
             
-            <xsl:when test="tei:persName">
-                <xsl:text>test</xsl:text>
-            </xsl:when>
-            
             <xsl:when test="tei:name">
 
                 <xsl:choose>
@@ -497,7 +501,7 @@
 
 
             <!-- EDITION -->
-            <!-- TEST -->
+            
             <xsl:if test="tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition">
                 <mods:edition>
                     <xsl:choose>
@@ -664,6 +668,13 @@
 
             </xsl:for-each>
 
+        </xsl:if>
+        
+        <!-- LEFT OFF HERE -->
+        <xsl:if test="tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:p">
+            <mods:note>
+            <xsl:value-of select="normalize-space(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:p)"/>
+            </mods:note>
         </xsl:if>
 
     </xsl:template>
