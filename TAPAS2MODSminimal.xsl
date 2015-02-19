@@ -101,7 +101,7 @@
 
             <mods:recordInfo>
                 <mods:recordContentSource>TEI Archive, Publishing, and Access Service (TAPAS)</mods:recordContentSource>
-                <mods:recordOrigin>MODS record generated from TEI source file &lt;teiHeader&gt; data.</mods:recordOrigin>
+                <mods:recordOrigin>MODS record generated from TEI source file teiHeader data.</mods:recordOrigin>
                 <mods:languageOfCataloging>
                     <mods:languageTerm type="text" authority="iso639-2b">English</mods:languageTerm>
                 </mods:languageOfCataloging>
@@ -119,6 +119,7 @@
 
         <xsl:if test="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author">
             <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author">
+                <xsl:if test="not(contains(., 'Unknown')) and not(contains(., 'unknown'))">
                 <xsl:choose>
                     <xsl:when test="tei:orgName">
                         <xsl:call-template name="corporateName"/>
@@ -127,6 +128,7 @@
                         <xsl:call-template name="personalName"/>
                     </xsl:otherwise>
                 </xsl:choose>
+                </xsl:if>
             </xsl:for-each>
         </xsl:if>
 
