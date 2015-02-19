@@ -32,6 +32,8 @@
 
             <!-- genre -->
 
+            <mods:genre authority="aat">texts (document genres)</mods:genre>
+
             <!-- originInfo -->
 
             <xsl:call-template name="originInfo"/>
@@ -403,7 +405,7 @@
 
     <xsl:template name="nameRole" xmlns:mods="http://www.loc.gov/mods/v3">
         <mods:role>
-            <mods:roleTerm type="text">
+            <mods:roleTerm authority="marcrelator" type="text">
                 <xsl:choose>
                     <xsl:when test="self::tei:author">
                         <xsl:text>Author</xsl:text>
@@ -421,7 +423,7 @@
                         <xsl:text>Sponsor</xsl:text>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:text>Encoder</xsl:text>
+                        <xsl:text>Markup editor</xsl:text>
                     </xsl:otherwise>
                 </xsl:choose>
             </mods:roleTerm>
