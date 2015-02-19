@@ -812,7 +812,7 @@
             </xsl:if>
 
             <mods:title>
-                <xsl:value-of select="tei:title[1]"/>
+                <xsl:value-of select="normalize-space(tei:title[1])"/>
             </mods:title>
         </mods:titleInfo>
 
@@ -837,7 +837,7 @@
                     <xsl:if test="tei:pubPlace">
                         <mods:place>
                             <mods:placeTerm>
-                                <xsl:value-of select="tei:pubPlace"/>
+                                <xsl:value-of select="normalize-space(tei:pubPlace)"/>
                             </mods:placeTerm>
                         </mods:place>
                     </xsl:if>
