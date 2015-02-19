@@ -101,7 +101,7 @@
 
             <mods:recordInfo>
                 <mods:recordContentSource>TEI Archive, Publishing, and Access Service (TAPAS)</mods:recordContentSource>
-                <mods:recordOrigin>Converted from TEI</mods:recordOrigin>
+                <mods:recordOrigin>MODS record generated from TEI source file &lt;teiHeader&gt; data.</mods:recordOrigin>
                 <mods:languageOfCataloging>
                     <mods:languageTerm type="text" authority="iso639-2b">English</mods:languageTerm>
                 </mods:languageOfCataloging>
@@ -312,9 +312,17 @@
                     </xsl:when>
                     <xsl:otherwise>
                         <mods:namePart>
-                            <xsl:for-each select="tei:name">
-                                <xsl:call-template name="invertName"/>
-                            </xsl:for-each>
+                            <xsl:choose>
+                                <xsl:when test="not(contains(tei:name, ' '))">
+                                    <xsl:value-of select="tei:name"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                <xsl:for-each select="tei:name">
+                                    <xsl:call-template name="invertName"/>
+                                </xsl:for-each>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                            
                         </mods:namePart>
 
                     </xsl:otherwise>
@@ -457,12 +465,12 @@
                     </xsl:if>
                     <xsl:if test="tei:distributor">
                         <mods:publisher>
-                            <xsl:value-of select="tei:distributor"/>
+                            <xsl:value-of select="normalize-space(tei:distributor)"/>
                         </mods:publisher>
                     </xsl:if>
                     <xsl:if test="tei:authority">
                         <mods:publisher>
-                            <xsl:value-of select="tei:authority"/>
+                            <xsl:value-of select="normalize-space(tei:authority)"/>
                         </mods:publisher>
                     </xsl:if>
                 </xsl:for-each>
