@@ -721,7 +721,7 @@
         <mods:language>
             <xsl:for-each select="tei:teiHeader/tei:profileDesc/tei:langUsage/tei:language">
                 <mods:languageTerm>
-                    <xsl:value-of select="."/>
+                    <xsl:value-of select="@ident"/>
                 </mods:languageTerm>
             </xsl:for-each>
         </mods:language>
