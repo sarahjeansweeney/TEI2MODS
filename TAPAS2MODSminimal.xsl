@@ -5,7 +5,19 @@
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output indent="yes" method="xml"/>
 
-  <xsl:template match="/tei:TEI">
+  <!-- TAPAS2MODSminimal: -->
+  <!-- Read in a TEI-encoded file intended for TAPAS, and write -->
+  <!-- out a MODS record for said file. -->
+  <!-- Written by Sarah Sweeney. -->
+  <!-- Updated 2015-07 by Syd Bauman and Ashley Clark -->
+  <!-- For now, we are only processing <TEI> root elements, -->
+  <!-- summarily ignoring the possibility of <teiCorpus>. -->
+
+  <xsl:template match="/">
+    <xsl:apply-templates select="tei:TEI/tei:teiHeader"/>
+  </xsl:template>
+  
+  <xsl:template match="tei:teiHeader">
 
     <mods:mods
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -14,10 +26,10 @@
       <!-- titleInfo -->
 
       <mods:titleInfo>
-<!--        <xsl:if test="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type = 'filing']">
+        <!-- xsl:if test="tei:fileDesc/tei:titleStmt/tei:title[@type = 'filing']">
           <mods:nonSort>
             <xsl:value-of
-              select="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type = 'filing']"/>
+              select="tei:fileDesc/tei:titleStmt/tei:title[@type = 'filing']"/>
           </mods:nonSort>
         </xsl:if>
         It turns out that mods:nonSort is not the same thing as tei:title[@type=filing]; the latter contains a title
@@ -27,7 +39,7 @@
         <mods:title>
           <!-- probably better to take the first <title> that has a type of "marc245a", "short", or "main" (not -->
           <!-- necessarily in that order), rather than the first <title> of all, which might be type=sub, e.g. -->
-          <xsl:value-of select="normalize-space(tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[1])"/>
+          <xsl:value-of select="normalize-space(tei:fileDesc/tei:titleStmt/tei:title[1])"/>
           <!-- better to apply-templates, rather than take string value -->
         </mods:title>
       </mods:titleInfo>
@@ -52,24 +64,25 @@
 
       <!-- language -->
 
-      <xsl:apply-templates select="tei:teiHeader/tei:profileDesc/tei:langUsage/tei:language"/>
+      <xsl:apply-templates select="tei:profileDesc/tei:langUsage/tei:language"/>
 
       <!-- physicalDescription -->
 
-      <xsl:if test="tei:teiHeader/tei:fileDesc/tei:extent">
+      <xsl:if test="tei:fileDesc/tei:extent">
         <mods:physicalDescription>
           <mods:extent>
-            <xsl:value-of select="tei:teiHeader/tei:fileDesc/tei:extent"/>
+            <xsl:value-of select="tei:fileDesc/tei:extent"/>
           </mods:extent>
         </mods:physicalDescription>
       </xsl:if>
 
       <!-- abstract -->
 
-      <xsl:if test="tei:teiHeader/tei:encodingDesc/tei:projectDesc">
-        <xsl:for-each select="tei:teiHeader/tei:encodingDesc/tei:projectDesc/tei:p">
+      <xsl:if test="tei:encodingDesc/tei:projectDesc">
+        <xsl:for-each select="tei:encodingDesc/tei:projectDesc/tei:p">
           <mods:abstract>
-            <xsl:value-of select="normalize-space(.)"/>
+            <!-- I'm not sure <projectDesc> naturally maps  to <abstract> at all -Syd -->
+            <xsl:apply-templates mode="textOnly"/>
           </mods:abstract>
         </xsl:for-each>
       </xsl:if>
@@ -88,26 +101,21 @@
 
       <!-- accessCondition -->
 
-      <xsl:if test="tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability">
         <xsl:choose>
-          <xsl:when test="tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/tei:p">
-            <xsl:for-each
-              select="tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/tei:p">
-              <mods:accessCondition>
-                <xsl:value-of select="normalize-space(.)"/>
-              </mods:accessCondition>
-            </xsl:for-each>
+          <xsl:when test="tei:fileDesc/tei:publicationStmt/tei:availability/tei:license">
+            <xsl:apply-templates select="tei:fileDesc/tei:publicationStmt/tei:availability/tei:license"/>
           </xsl:when>
-
+          <xsl:when test="tei:fileDesc/tei:publicationStmt/tei:availability">
+            <mods:accessCondition>
+              <xsl:apply-templates select="tei:fileDesc/tei:publicationStmt/tei:availability" mode="textOnly"/>
+            </mods:accessCondition>
+          </xsl:when>
           <xsl:otherwise>
             <mods:accessCondition>
-              <xsl:value-of
-                select="normalize-space(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability)"
-              />
+              <xsl:apply-templates select="tei:fileDesc/tei:publicationStmt" mode="textOnly"/>
             </mods:accessCondition>
           </xsl:otherwise>
         </xsl:choose>
-      </xsl:if>
 
       <!-- extension -->
       <mods:extension displayLabel="TEI">
@@ -128,14 +136,18 @@
 
   </xsl:template>
 
+  <!-- ******************* -->
+  <!-- *** subroutines *** -->
+  <!-- ******************* -->
+  
   <!-- CREATORS -->
 
   <xsl:template name="creators">
 
     <!-- AUTHOR -->
 
-    <xsl:if test="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author">
-      <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author">
+    <xsl:if test="tei:fileDesc/tei:titleStmt/tei:author">
+      <xsl:for-each select="tei:fileDesc/tei:titleStmt/tei:author">
         <xsl:if test="not(contains(., 'Unknown')) and not(contains(., 'unknown'))">
           <xsl:choose>
             <xsl:when test="tei:orgName">
@@ -151,8 +163,8 @@
 
     <!-- EDITOR -->
 
-    <xsl:if test="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:editor">
-      <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:editor">
+    <xsl:if test="tei:fileDesc/tei:titleStmt/tei:editor">
+      <xsl:for-each select="tei:fileDesc/tei:titleStmt/tei:editor">
         <xsl:choose>
           <xsl:when test="tei:orgName">
             <xsl:call-template name="corporateName"/>
@@ -166,8 +178,8 @@
 
     <!-- FUNDER -->
 
-    <xsl:if test="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:funder">
-      <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:funder">
+    <xsl:if test="tei:fileDesc/tei:titleStmt/tei:funder">
+      <xsl:for-each select="tei:fileDesc/tei:titleStmt/tei:funder">
         <xsl:choose>
           <xsl:when test="tei:orgName">
             <xsl:call-template name="corporateName"/>
@@ -181,8 +193,8 @@
 
     <!-- PRINCIPAL -->
 
-    <xsl:if test="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:principal">
-      <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:principal">
+    <xsl:if test="tei:fileDesc/tei:titleStmt/tei:principal">
+      <xsl:for-each select="tei:fileDesc/tei:titleStmt/tei:principal">
         <xsl:choose>
           <xsl:when test="tei:orgName">
             <xsl:call-template name="corporateName"/>
@@ -196,8 +208,8 @@
 
     <!-- SPONSOR -->
 
-    <xsl:if test="tei:teiHeader/tei:fileDesc/tei:titleStmt/sponsor">
-      <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor">
+    <xsl:if test="tei:fileDesc/tei:titleStmt/sponsor">
+      <xsl:for-each select="tei:fileDesc/tei:titleStmt/tei:sponsor">
         <xsl:choose>
           <xsl:when test="tei:orgName">
             <xsl:call-template name="corporateName"/>
@@ -211,8 +223,8 @@
 
     <!-- REPSONSIBILITY STATEMENT -->
 
-    <xsl:if test="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:respStmt">
-      <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:respStmt">
+    <xsl:if test="tei:fileDesc/tei:titleStmt/tei:respStmt">
+      <xsl:for-each select="tei:fileDesc/tei:titleStmt/tei:respStmt">
         <xsl:choose>
           <xsl:when test="tei:name[2] or tei:persName[2] or tei:orgName[2]">
             <xsl:if test="tei:name">
@@ -467,23 +479,23 @@
   <xsl:template name="originInfo">
 
     <xsl:if
-      test="tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:pubPlace or tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:publisher or tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:distributor or tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:authority or tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date">
+      test="tei:fileDesc/tei:publicationStmt/tei:pubPlace or tei:fileDesc/tei:publicationStmt/tei:publisher or tei:fileDesc/tei:publicationStmt/tei:distributor or tei:fileDesc/tei:publicationStmt/tei:authority or tei:fileDesc/tei:publicationStmt/tei:date">
 
       <mods:originInfo>
 
-        <xsl:if test="tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:pubPlace">
+        <xsl:if test="tei:fileDesc/tei:publicationStmt/tei:pubPlace">
 
           <mods:place>
             <mods:placeTerm>
               <xsl:value-of
-                select="normalize-space(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:pubPlace)"
+                select="normalize-space(tei:fileDesc/tei:publicationStmt/tei:pubPlace)"
               />
             </mods:placeTerm>
           </mods:place>
 
         </xsl:if>
 
-        <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:publicationStmt">
+        <xsl:for-each select="tei:fileDesc/tei:publicationStmt">
           <xsl:if test="tei:publisher">
             <mods:publisher>
               <xsl:value-of select="normalize-space(tei:publisher)"/>
@@ -501,8 +513,8 @@
           </xsl:if>
         </xsl:for-each>
 
-        <xsl:if test="tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date">
-          <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:publicationStmt">
+        <xsl:if test="tei:fileDesc/tei:publicationStmt/tei:date">
+          <xsl:for-each select="tei:fileDesc/tei:publicationStmt">
 
             <xsl:choose>
               <xsl:when test="tei:date[@when]">
@@ -534,37 +546,37 @@
 
         <!-- EDITION -->
 
-        <xsl:if test="tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition">
+        <xsl:if test="tei:fileDesc/tei:editionStmt/tei:edition">
           <mods:edition>
             <xsl:choose>
-              <xsl:when test="tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition[@n]">
-                <xsl:value-of select="tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition/@n"/>
-                <xsl:if test="tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:respStmt">
+              <xsl:when test="tei:fileDesc/tei:editionStmt/tei:edition[@n]">
+                <xsl:value-of select="tei:fileDesc/tei:editionStmt/tei:edition/@n"/>
+                <xsl:if test="tei:fileDesc/tei:editionStmt/tei:respStmt">
                   <xsl:text>; </xsl:text>
                   <xsl:value-of
-                    select="tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:respStmt/tei:resp"/>
+                    select="tei:fileDesc/tei:editionStmt/tei:respStmt/tei:resp"/>
                   <xsl:text> </xsl:text>
                 </xsl:if>
-                <xsl:if test="tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:respStmt/tei:name">
+                <xsl:if test="tei:fileDesc/tei:editionStmt/tei:respStmt/tei:name">
                   <xsl:value-of
-                    select="tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:respStmt/tei:name"/>
+                    select="tei:fileDesc/tei:editionStmt/tei:respStmt/tei:name"/>
                 </xsl:if>
               </xsl:when>
-              <xsl:when test="tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition/tei:p">
-                <xsl:value-of select="tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition/tei:p"
+              <xsl:when test="tei:fileDesc/tei:editionStmt/tei:edition/tei:p">
+                <xsl:value-of select="tei:fileDesc/tei:editionStmt/tei:edition/tei:p"
                 />
               </xsl:when>
               <xsl:otherwise>
-                <xsl:value-of select="tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition"/>
-                <xsl:if test="tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:respStmt">
+                <xsl:value-of select="tei:fileDesc/tei:editionStmt/tei:edition"/>
+                <xsl:if test="tei:fileDesc/tei:editionStmt/tei:respStmt">
                   <xsl:text>; </xsl:text>
                   <xsl:value-of
-                    select="tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:respStmt/tei:resp"/>
+                    select="tei:fileDesc/tei:editionStmt/tei:respStmt/tei:resp"/>
                   <xsl:text> </xsl:text>
                 </xsl:if>
-                <xsl:if test="tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:respStmt/tei:name">
+                <xsl:if test="tei:fileDesc/tei:editionStmt/tei:respStmt/tei:name">
                   <xsl:value-of
-                    select="tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:respStmt/tei:name"/>
+                    select="tei:fileDesc/tei:editionStmt/tei:respStmt/tei:name"/>
                 </xsl:if>
               </xsl:otherwise>
             </xsl:choose>
@@ -669,11 +681,11 @@
 
   <xsl:template name="notes">
 
-    <xsl:if test="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:respStmt/tei:resp">
+    <xsl:if test="tei:fileDesc/tei:titleStmt/tei:respStmt/tei:resp">
 
       <mods:note>
 
-        <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:respStmt">
+        <xsl:for-each select="tei:fileDesc/tei:titleStmt/tei:respStmt">
 
           <xsl:call-template name="encodingResp"/>
 
@@ -682,7 +694,7 @@
         </xsl:for-each>
 
         <xsl:for-each
-          select="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:respStmt/tei:resp/tei:name">
+          select="tei:fileDesc/tei:titleStmt/tei:respStmt/tei:resp/tei:name">
           <xsl:number value="position()"/>
         </xsl:for-each>
 
@@ -690,9 +702,9 @@
 
     </xsl:if>
 
-    <xsl:if test="tei:teiHeader/tei:fileDesc/tei:notesStmt/tei:note">
+    <xsl:if test="tei:fileDesc/tei:notesStmt/tei:note">
 
-      <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:notesStmt/tei:note">
+      <xsl:for-each select="tei:fileDesc/tei:notesStmt/tei:note">
 
         <xsl:choose>
           <xsl:when test="./@type = 'ns'">
@@ -712,9 +724,9 @@
 
     </xsl:if>
 
-    <xsl:if test="tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:p">
+    <xsl:if test="tei:fileDesc/tei:publicationStmt/tei:p">
       <mods:note>
-        <xsl:value-of select="normalize-space(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:p)"
+        <xsl:value-of select="normalize-space(tei:fileDesc/tei:publicationStmt/tei:p)"
         />
       </mods:note>
     </xsl:if>
@@ -722,10 +734,10 @@
   </xsl:template>
 
   <xsl:template name="subjects">
-    <xsl:if test="tei:teiHeader/tei:profileDesc/tei:textClass/tei:keywords/tei:term">
+    <xsl:if test="tei:profileDesc/tei:textClass/tei:keywords/tei:term">
       <xsl:choose>
-        <xsl:when test="tei:teiHeader/tei:profileDesc/tei:textClass/tei:keywords[@scheme]">
-          <xsl:for-each select="tei:teiHeader/tei:profileDesc/tei:textClass/tei:keywords/tei:term">
+        <xsl:when test="tei:profileDesc/tei:textClass/tei:keywords[@scheme]">
+          <xsl:for-each select="tei:profileDesc/tei:textClass/tei:keywords/tei:term">
             <mods:subject authorityURI="{ancestor::tei:keywords/@scheme}">
               <mods:topic>
                 <xsl:value-of select="."/>
@@ -734,7 +746,7 @@
           </xsl:for-each>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:for-each select="tei:teiHeader/tei:profileDesc/tei:textClass/tei:keywords/tei:term">
+          <xsl:for-each select="tei:profileDesc/tei:textClass/tei:keywords/tei:term">
             <mods:subject>
               <mods:topic>
                 <xsl:value-of select="."/>
@@ -745,9 +757,9 @@
       </xsl:choose>
     </xsl:if>
     <xsl:if
-      test="tei:teiHeader/tei:encodingDesc/tei:classDecl/tei:taxonomy/tei:category/tei:catDesc">
+      test="tei:encodingDesc/tei:classDecl/tei:taxonomy/tei:category/tei:catDesc">
       <xsl:for-each
-        select="tei:teiHeader/tei:encodingDesc/tei:classDecl/tei:taxonomy/tei:category/tei:catDesc">
+        select="tei:encodingDesc/tei:classDecl/tei:taxonomy/tei:category/tei:catDesc">
         <mods:subject>
           <mods:topic>
             <xsl:value-of select="."/>
@@ -762,37 +774,37 @@
   <xsl:template name="relatedItem">
 
     <!-- SERIES -->
-    <xsl:if test="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@level = 's']">
+    <xsl:if test="tei:fileDesc/tei:titleStmt/tei:title[@level = 's']">
       <mods:relatedItem type="series">
         <mods:titleInfo>
           <mods:title>
             <xsl:value-of
-              select="normalize-space(tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@level = 's'])"
+              select="normalize-space(tei:fileDesc/tei:titleStmt/tei:title[@level = 's'])"
             />
           </mods:title>
         </mods:titleInfo>
       </mods:relatedItem>
     </xsl:if>
 
-    <xsl:if test="tei:teiHeader/tei:fileDesc/tei:seriesStmt/tei:title">
+    <xsl:if test="tei:fileDesc/tei:seriesStmt/tei:title">
       <mods:relatedItem type="series">
         <mods:titleInfo>
           <mods:title>
             <xsl:value-of
-              select="normalize-space(tei:teiHeader/tei:fileDesc/tei:seriesStmt/tei:title)"/>
+              select="normalize-space(tei:fileDesc/tei:seriesStmt/tei:title)"/>
           </mods:title>
         </mods:titleInfo>
 
-        <xsl:if test="tei:teiHeader/tei:fileDesc/tei:seriesStmt/tei:editor">
-          <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:seriesStmt/tei:editor">
+        <xsl:if test="tei:fileDesc/tei:seriesStmt/tei:editor">
+          <xsl:for-each select="tei:fileDesc/tei:seriesStmt/tei:editor">
             <mods:note>
               <xsl:value-of select="normalize-space(.)"/>
             </mods:note>
           </xsl:for-each>
         </xsl:if>
 
-        <xsl:if test="tei:teiHeader/tei:fileDesc/tei:seriesStmt/tei:respStmt">
-          <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:seriesStmt/tei:respStmt">
+        <xsl:if test="tei:fileDesc/tei:seriesStmt/tei:respStmt">
+          <xsl:for-each select="tei:fileDesc/tei:seriesStmt/tei:respStmt">
             <mods:note>
               <xsl:value-of select="normalize-space(.)"/>
             </mods:note>
@@ -803,19 +815,19 @@
     </xsl:if>
 
     <!-- ORIGINAL/ANALYTIC -->
-    <xsl:if test="tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblStruct/tei:analytic/tei:title">
+    <xsl:if test="tei:fileDesc/tei:sourceDesc/tei:biblStruct/tei:analytic/tei:title">
       <mods:relatedItem type="original">
-        <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblStruct/tei:analytic">
+        <xsl:for-each select="tei:fileDesc/tei:sourceDesc/tei:biblStruct/tei:analytic">
           <xsl:call-template name="monoanalytic"/>
         </xsl:for-each>
       </mods:relatedItem>
     </xsl:if>
 
-    <xsl:if test="tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl">
+    <xsl:if test="tei:fileDesc/tei:sourceDesc/tei:bibl">
       <mods:relatedItem type="original">
         <xsl:choose>
-          <xsl:when test="tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:title">
-            <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl">
+          <xsl:when test="tei:fileDesc/tei:sourceDesc/tei:bibl/tei:title">
+            <xsl:for-each select="tei:fileDesc/tei:sourceDesc/tei:bibl">
               <xsl:call-template name="monoanalytic"/>
             </xsl:for-each>
           </xsl:when>
@@ -823,7 +835,7 @@
             <mods:titleInfo>
               <mods:title>
                 <xsl:value-of
-                  select="normalize-space(tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl)"/>
+                  select="normalize-space(tei:fileDesc/tei:sourceDesc/tei:bibl)"/>
               </mods:title>
             </mods:titleInfo>
           </xsl:otherwise>
@@ -832,9 +844,9 @@
     </xsl:if>
 
     <!-- HOST/MONOGRAPHIC -->
-    <xsl:if test="tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblStruct/tei:monogr/tei:title">
+    <xsl:if test="tei:fileDesc/tei:sourceDesc/tei:biblStruct/tei:monogr/tei:title">
       <mods:relatedItem type="host">
-        <xsl:for-each select="tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblStruct/tei:monogr">
+        <xsl:for-each select="tei:fileDesc/tei:sourceDesc/tei:biblStruct/tei:monogr">
           <xsl:call-template name="monoanalytic"/>
         </xsl:for-each>
       </mods:relatedItem>
@@ -895,6 +907,54 @@
       </xsl:for-each>
     </xsl:if>
 
+  </xsl:template>
+  
+  <!-- LICENSING -->
+
+  <xsl:template match="tei:license">
+    <mods:accessCondition>
+      <xsl:if test="@target | @when
+        | @notBefore | @notAfter
+        | @from | @to
+        ">
+        <xsl:text>(licensing information: </xsl:text>
+        <xsl:if test="@target">
+          <url><xsl:value-of select="@target"/></url>
+        </xsl:if>
+        <xsl:if test="@when">
+          <date><xsl:value-of select="@when"/></date>
+        </xsl:if>
+        <xsl:if test="@notBefore">
+          <date>not before <xsl:value-of select="@notBefore"/></date>
+        </xsl:if>
+        <xsl:if test="@notAfter">
+          <date>not after <xsl:value-of select="@notBefore"/></date>
+        </xsl:if>
+        <xsl:if test="@from|@to">
+          <date><xsl:value-of select="@from"/>&#x2013;<xsl:value-of select="@to"/></date>
+        </xsl:if>
+        <xsl:text>)</xsl:text>
+        <xsl:if test="normalize-space(.) != ''">
+          <xsl:text> </xsl:text>
+        </xsl:if>
+      </xsl:if>
+      <xsl:apply-templates mode="textOnly"/>
+    </mods:accessCondition>
+  </xsl:template>
+  
+  <!-- process nodes in a text-only environment -->
+ 
+  <xsl:template match="text()" mode="textOnly">
+    <!-- return same text node with any sequence of whitespace (including -->
+    <!-- leading or trailing) reduced to a single blank. -->
+    <xsl:variable name="protected" select="concat('␠','  piano    keyboard!','␠')"/>
+    <xsl:variable name="normalized" select="normalize-space($protected)"/>
+    <xsl:variable name="result" select="substring( substring-after($normalized,'␠'), 1, string-length( $normalized )-2 )"/>
+    <xsl:value-of select="$result"/>
+  </xsl:template>
+  
+  <xsl:template match="*" mode="textOnly">
+    <xsl:apply-templates mode="textOnly"/>
   </xsl:template>
 
 </xsl:stylesheet>
