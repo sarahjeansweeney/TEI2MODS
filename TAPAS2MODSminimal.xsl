@@ -947,9 +947,9 @@
   <xsl:template match="text()" mode="textOnly">
     <!-- return same text node with any sequence of whitespace (including -->
     <!-- leading or trailing) reduced to a single blank. -->
-    <xsl:variable name="protected" select="concat('␠','  piano    keyboard!','␠')"/>
-    <xsl:variable name="normalized" select="normalize-space($protected)"/>
-    <xsl:variable name="result" select="substring( substring-after($normalized,'␠'), 1, string-length( $normalized )-2 )"/>
+    <xsl:variable name="protected" select="concat('␠', .,'␠')"/>
+    <xsl:variable name="normalized" select="normalize-space( $protected )"/>
+    <xsl:variable name="result" select="substring( substring-after( $normalized ,'␠'), 1, string-length( $normalized )-2 )"/>
     <xsl:value-of select="$result"/>
   </xsl:template>
   
