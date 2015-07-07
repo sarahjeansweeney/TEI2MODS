@@ -26,6 +26,28 @@
       <!-- titleInfo -->
 
       <mods:titleInfo>
+        <xsl:variable name="mainModsTitle">
+          <!-- first, set the current node to be <titleStmt> (there is only 1 per <TEI>) -->
+          <xsl:for-each select="tei:fileDesc/tei:titleStmt">
+            <xsl:choose>
+              <xsl:when test="tei:title[ @type ='marc245a']">
+                <xsl:value-of select="tei:title[ @type='marc245a'][1]"/>
+              </xsl:when>
+              <xsl:when test="tei:title[ @type = 'uniform']">
+                <xsl:value-of select="tei:title[ @type ='uniform'][1]"/>
+              </xsl:when>
+              <xsl:when test="tei:title[ @type = 'main']">
+                <xsl:apply-templates select="tei:title[ @type ='main']" mode="concatText"/>
+              </xsl:when>
+              <xsl:when test="tei:title[ not(@type) ]">
+                <xsl:apply-templates select="tei:title[ not( @type ) ]" mode="concatText"/>
+              </xsl:when>
+              <xsl:when test="tei:title[ @type = 'short']">
+                <xsl:apply-templates select="tei:title[ @type ='short']" mode="concatText"/>
+              </xsl:when>
+            </xsl:choose>
+          </xsl:for-each>
+        </xsl:variable>
         <!-- xsl:if test="tei:fileDesc/tei:titleStmt/tei:title[@type = 'filing']">
           <mods:nonSort>
             <xsl:value-of
@@ -35,11 +57,8 @@
         It turns out that mods:nonSort is not the same thing as tei:title[@type=filing]; the latter contains a title
         without initial articles; the former is sub-title encoding to show which are the initial articles.
         -->
-
         <mods:title>
-          <!-- probably better to take the first <title> that has a type of "marc245a", "short", or "main" (not -->
-          <!-- necessarily in that order), rather than the first <title> of all, which might be type=sub, e.g. -->
-          <xsl:value-of select="normalize-space(tei:fileDesc/tei:titleStmt/tei:title[1])"/>
+          <xsl:value-of select="$mainModsTitle"/>
           <!-- better to apply-templates, rather than take string value -->
         </mods:title>
       </mods:titleInfo>
@@ -266,11 +285,8 @@
 
   <xsl:template name="personalName">
     <mods:name type="personal">
-
       <xsl:call-template name="personalNamePart"/>
-
       <xsl:call-template name="nameRole"/>
-
     </mods:name>
   </xsl:template>
 
@@ -287,11 +303,9 @@
             <xsl:value-of select="tei:nameLink"/>
           </xsl:if>
         </mods:namePart>
-
       </xsl:when>
 
       <xsl:when test="tei:persName">
-
         <xsl:for-each select="tei:persName[1]">
           <xsl:choose>
             <xsl:when test="tei:surname">
@@ -314,13 +328,13 @@
                 </xsl:if>
               </mods:namePart>
             </xsl:when>
+            
             <xsl:when test="tei:title">
-
               <mods:namePart>
                 <xsl:value-of select="normalize-space(.)"/>
               </mods:namePart>
-
             </xsl:when>
+            
             <xsl:otherwise>
               <mods:namePart>
                 <xsl:for-each select=".">
@@ -330,7 +344,6 @@
             </xsl:otherwise>
           </xsl:choose>
         </xsl:for-each>
-
       </xsl:when>
 
       <xsl:when test="tei:name">
@@ -353,9 +366,7 @@
                   </xsl:for-each>
                 </xsl:otherwise>
               </xsl:choose>
-
             </mods:namePart>
-
           </xsl:otherwise>
         </xsl:choose>
 
@@ -955,6 +966,18 @@
   
   <xsl:template match="*" mode="textOnly">
     <xsl:apply-templates mode="textOnly"/>
+  </xsl:template>
+  
+  <!-- join titles as if XSLT2 join( titles,'—') -->
+  
+  <xsl:template match="tei:title" mode="concatText">
+    <xsl:variable name="append">
+      <xsl:choose>
+        <xsl:when test="position() = last()"/>
+        <xsl:otherwise> &#x2014; </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:value-of select="concat( ., $append )"/>
   </xsl:template>
 
 </xsl:stylesheet>
