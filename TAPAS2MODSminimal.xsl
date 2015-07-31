@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="2.0"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns:mods="http://www.loc.gov/mods/v3"
   xmlns:tei="http://www.tei-c.org/ns/1.0"
   xmlns:wwpft="http://www.wwp.northeastern.edu/ns/functions"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
-  exclude-result-prefixes="tei xsl">
+  exclude-result-prefixes="tei xs xsl wwpft">
   <xsl:output indent="yes" method="xml"/>
 
   <!-- TAPAS2MODSminimal: -->
@@ -20,9 +21,7 @@
   <!-- Match the leading articles of work titles, and return their character counts. -->
   <xsl:function name="wwpft:number-nonfiling">
     <xsl:param name="title" required="yes"/>
-    <xsl:variable name="leadingArticlesRegex">
-      <xsl:text>^((a|an|the|der|das|le|la|el) |).+$</xsl:text>
-    </xsl:variable>
+    <xsl:variable name="leadingArticlesRegex" select="'^((a|an|the|der|das|le|la|el) |).+$'"/>
     <xsl:value-of select="string-length(replace($title,$leadingArticlesRegex,'$1','i'))"/>
   </xsl:function>
   
@@ -32,46 +31,65 @@
     <xsl:apply-templates select="tei:TEI/tei:teiHeader"/>
   </xsl:template>
   
+  <!-- Given a title, contruct its <titleInfo>, including (limited) non-filing handling. -->
+  <xsl:template name="constructTitle">
+    <xsl:param name="title" required="yes"/>
+    <xsl:param name="is-main" as="xs:boolean" select="false()"/>
+    <xsl:variable name="num-nonfiling" select="wwpft:number-nonfiling($title)"/>
+    <mods:titleInfo>
+      <xsl:if test="not($is-main)">
+        <xsl:attribute name="type" select="'alternative'"/>
+      </xsl:if>
+      <xsl:if test="$num-nonfiling > 0">
+        <mods:nonSort>
+          <xsl:value-of select="substring($title,1,$num-nonfiling - 1)"/>
+        </mods:nonSort>
+      </xsl:if>
+      <mods:title>
+        <xsl:value-of select="if ($num-nonfiling = 0) then $title
+                              else substring($title,$num-nonfiling+1)"/>
+      </mods:title>
+    </mods:titleInfo>
+  </xsl:template>
+  
   <xsl:template match="tei:teiHeader">
     <mods:mods>
-      <!-- titleInfo -->
-      <mods:titleInfo>
-        <xsl:variable name="mainModsTitle">
-          <!-- first, set the current node to be <titleStmt> (there is only 1 per <TEI>) -->
-          <xsl:for-each select="tei:fileDesc/tei:titleStmt">
-            <xsl:choose>
-              <xsl:when test="tei:title[ @type ='marc245a']">
-                <xsl:value-of select="tei:title[ @type='marc245a'][1]"/>
-              </xsl:when>
-              <xsl:when test="tei:title[ @type = 'uniform']">
-                <xsl:value-of select="tei:title[ @type ='uniform'][1]"/>
-              </xsl:when>
-              <xsl:when test="tei:title[ @type = 'main']">
-                <xsl:apply-templates select="tei:title[ @type ='main']" mode="concatText"/>
-              </xsl:when>
-              <xsl:when test="tei:title[ not(@type) ]">
-                <xsl:apply-templates select="tei:title[ not( @type ) ]" mode="concatText"/>
-              </xsl:when>
-              <xsl:when test="tei:title[ @type = 'short']">
-                <xsl:apply-templates select="tei:title[ @type ='short']" mode="concatText"/>
-              </xsl:when>
-            </xsl:choose>
-          </xsl:for-each>
-        </xsl:variable>
-        <!-- xsl:if test="tei:fileDesc/tei:titleStmt/tei:title[@type = 'filing']">
-          <mods:nonSort>
-            <xsl:value-of
-              select="tei:fileDesc/tei:titleStmt/tei:title[@type = 'filing']"/>
-          </mods:nonSort>
-        </xsl:if>
-        It turns out that mods:nonSort is not the same thing as tei:title[@type=filing]; the latter contains a title
-        without initial articles; the former is sub-title encoding to show which are the initial articles.
-        -->
-        <mods:title>
-          <xsl:value-of select="$mainModsTitle"/>
-          <!-- better to apply-templates, rather than take string value -->
-        </mods:title>
-      </mods:titleInfo>
+      <xsl:variable name="allTitles" select="tei:fileDesc//tei:title"/>
+      <!-- When choosing the main title, prioritize those which have been 
+        explicitly encoded for canonical use. -->
+      <xsl:variable name="mainType">
+        <xsl:choose>
+          <xsl:when test="$allTitles/@type = 'marc245a'">
+            <xsl:copy-of select="$allTitles[@type = 'marc245a'][1]"/>
+          </xsl:when>
+          <xsl:when test="$allTitles/@type = 'uniform'">
+            <xsl:copy-of select="$allTitles[@type = 'uniform'][1]"/>
+          </xsl:when>
+          <xsl:when test="$allTitles/@type = 'main'">
+            <xsl:copy-of select="$allTitles[@type = 'main'][1]"/>
+          </xsl:when>
+          <xsl:when test="not($allTitles/@type)">
+            <xsl:copy-of select="$allTitles[not(@type)][1]"/>
+          </xsl:when>
+          <xsl:when test="$allTitles/@type = 'desc'">
+            <xsl:copy-of select="$allTitles[@type = 'desc'][1]"/>
+          </xsl:when>
+          <xsl:when test="$allTitles/@type">
+            <xsl:copy-of select="$allTitles[@type][1]"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:copy-of select="$allTitles[1]"/>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:variable>
+      <xsl:for-each select="$allTitles">
+        <xsl:variable name="title" select="."/>
+        <xsl:call-template name="constructTitle">
+          <xsl:with-param name="title" select="$title"/>
+          <xsl:with-param name="is-main" select=" if ($title eq $mainType) then true()
+                                                  else false()"/>
+        </xsl:call-template>
+      </xsl:for-each>
 
       <!-- name -->
 
@@ -940,18 +958,6 @@
   
   <xsl:template match="*" mode="textOnly">
     <xsl:apply-templates mode="textOnly"/>
-  </xsl:template>
-  
-  <!-- join titles as if XSLT2 join( titles,'—') -->
-  
-  <xsl:template match="tei:title" mode="concatText">
-    <xsl:variable name="append">
-      <xsl:choose>
-        <xsl:when test="position() = last()"/>
-        <xsl:otherwise> &#x2014; </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    <xsl:value-of select="concat( ., $append )"/>
   </xsl:template>
 
 </xsl:stylesheet>
