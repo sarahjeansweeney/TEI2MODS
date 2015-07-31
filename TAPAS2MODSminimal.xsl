@@ -81,38 +81,47 @@
     <xsl:variable name="allTitles" select="tei:fileDesc//tei:title"/>
     <!-- When choosing the main title, prioritize those which have been 
       explicitly encoded for canonical use. -->
-    <xsl:variable name="mainType">
+    <xsl:variable name="mainTitle">
       <xsl:choose>
         <xsl:when test="$allTitles/@type = 'marc245a'">
-          <xsl:copy-of select="$allTitles[@type = 'marc245a'][1]"/>
+          <xsl:apply-templates select="$allTitles[@type = 'marc245a'][1]" mode="textOnly"/>
         </xsl:when>
         <xsl:when test="$allTitles/@type = 'uniform'">
-          <xsl:copy-of select="$allTitles[@type = 'uniform'][1]"/>
+          <xsl:apply-templates select="$allTitles[@type = 'uniform'][1]" mode="textOnly"/>
         </xsl:when>
         <xsl:when test="$allTitles/@type = 'main'">
-          <xsl:copy-of select="$allTitles[@type = 'main'][1]"/>
+          <xsl:apply-templates select="$allTitles[@type = 'main'][1]" mode="textOnly"/>
         </xsl:when>
         <xsl:when test="not($allTitles/@type)">
-          <xsl:copy-of select="$allTitles[not(@type)][1]"/>
+          <xsl:apply-templates select="$allTitles[not(@type)][1]" mode="textOnly"/>
         </xsl:when>
         <xsl:when test="$allTitles/@type = 'desc'">
-          <xsl:copy-of select="$allTitles[@type = 'desc'][1]"/>
+          <xsl:apply-templates select="$allTitles[@type = 'desc'][1]" mode="textOnly"/>
         </xsl:when>
         <xsl:when test="$allTitles/@type">
-          <xsl:copy-of select="$allTitles[@type][1]"/>
+          <xsl:apply-templates select="$allTitles[@type][1]" mode="textOnly"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:copy-of select="$allTitles[1]"/>
+          <xsl:apply-templates select="$allTitles[1]" mode="textOnly"/>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
+    <!-- Construct the entry for the main title. -->
+    <xsl:call-template name="constructTitle">
+      <xsl:with-param name="title" select="$mainTitle"/>
+      <xsl:with-param name="is-main" select="true()"/>
+    </xsl:call-template>
+    <!-- Construct the alternate titles. -->
     <xsl:for-each select="$allTitles">
-      <xsl:variable name="title" select="."/>
-      <xsl:call-template name="constructTitle">
-        <xsl:with-param name="title" select="$title"/>
-        <xsl:with-param name="is-main" select=" if ($title eq $mainType) then true()
-                                                else false()"/>
-      </xsl:call-template>
+      <xsl:variable name="title">
+        <xsl:apply-templates select="." mode="textOnly"/>
+      </xsl:variable>
+      <!-- Do not include duplicate main titles. --> <!-- Maybe we should cut out all duplicates? ~Ashley -->
+      <xsl:if test="not($title eq $mainTitle)">
+        <xsl:call-template name="constructTitle">
+          <xsl:with-param name="title" select="$title"/>
+        </xsl:call-template>
+      </xsl:if>
     </xsl:for-each>
 
     <!-- name -->
@@ -651,7 +660,6 @@
         <xsl:text>. </xsl:text>
       </xsl:if>
     </xsl:if>
-
   </xsl:template>
 
   <xsl:template name="encodersName">
@@ -662,67 +670,43 @@
   </xsl:template>
 
   <xsl:template name="notes">
-    <xsl:if test="tei:fileDesc/tei:titleStmt/tei:respStmt/tei:resp">
-      <mods:note>
-        <xsl:for-each select="tei:fileDesc/tei:titleStmt/tei:respStmt">
-          <xsl:call-template name="encodingResp"/>
-          <xsl:call-template name="encoders"/>
-        </xsl:for-each>
-        <xsl:for-each
-          select="tei:fileDesc/tei:titleStmt/tei:respStmt/tei:resp/tei:name">
-          <xsl:number value="position()"/>
-        </xsl:for-each>
-      </mods:note>
-    </xsl:if>
+    <xsl:apply-templates select="//tei:notesStmt/tei:note"/>
     
-    <xsl:if test="tei:fileDesc/tei:notesStmt/tei:note">
-      <xsl:for-each select="tei:fileDesc/tei:notesStmt/tei:note">
-        <xsl:choose>
-          <xsl:when test="./@type = 'ns'">
-            <mods:note>
-              <xsl:value-of select="."/>
-            </mods:note>
-          </xsl:when>
-          <xsl:when test="./@type = 'relatedItem'"/>
-          <xsl:otherwise>
-            <mods:note>
-              <xsl:value-of select="."/>
-            </mods:note>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:for-each>
-    </xsl:if>
-    
-    <xsl:if test="tei:fileDesc/tei:publicationStmt/tei:p">
+    <xsl:if test="tei:fileDesc/tei:publicationStmt/tei:p"> <!-- Is this accurate? ~Ashley -->
       <mods:note>
         <xsl:value-of select="normalize-space(tei:fileDesc/tei:publicationStmt/tei:p)"/>
       </mods:note>
     </xsl:if>
   </xsl:template>
+  
+  <xsl:template match="tei:notesStmt/tei:note">
+    <mods:note>
+      <xsl:apply-templates mode="textOnly"/>
+    </mods:note>
+  </xsl:template>
+  
+  <xsl:template match="tei:keywords/tei:term">
+    <mods:subject>
+      <xsl:if test="parent::tei:keywords/@scheme">
+        <xsl:attribute name="authorityURI" select="parent::tei:keywords/@scheme"/>
+      </xsl:if>
+      <mods:topic>
+        <xsl:value-of select="."/>
+      </mods:topic>
+    </mods:subject>
+  </xsl:template>
+  <!-- Handle <list>s inside <keywords> (deprecated, but may still be around in 
+    older TEI) -->
+  <xsl:template match="tei:keywords/tei:list/tei:item">
+    <mods:subject>
+      <mods:topic>
+        <xsl:value-of select="."/>
+      </mods:topic>
+    </mods:subject>
+  </xsl:template>
 
   <xsl:template name="subjects">
-    <xsl:if test="tei:profileDesc/tei:textClass/tei:keywords/tei:term">
-      <xsl:choose>
-        <xsl:when test="tei:profileDesc/tei:textClass/tei:keywords[@scheme]">
-          <xsl:for-each select="tei:profileDesc/tei:textClass/tei:keywords/tei:term">
-            <mods:subject authorityURI="{ancestor::tei:keywords/@scheme}">
-              <mods:topic>
-                <xsl:value-of select="."/>
-              </mods:topic>
-            </mods:subject>
-          </xsl:for-each>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:for-each select="tei:profileDesc/tei:textClass/tei:keywords/tei:term">
-            <mods:subject>
-              <mods:topic>
-                <xsl:value-of select="."/>
-              </mods:topic>
-            </mods:subject>
-          </xsl:for-each>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:if>
+    <xsl:apply-templates select="//tei:keywords/(tei:term | tei:list/tei:item)"/>
     
     <xsl:if
       test="tei:encodingDesc/tei:classDecl/tei:taxonomy/tei:category/tei:catDesc">
@@ -747,8 +731,7 @@
         <mods:titleInfo>
           <mods:title>
             <xsl:value-of
-              select="normalize-space(tei:fileDesc/tei:titleStmt/tei:title[@level = 's'])"
-            />
+              select="normalize-space(tei:fileDesc/tei:titleStmt/tei:title[@level = 's'])"/>
           </mods:title>
         </mods:titleInfo>
       </mods:relatedItem>
@@ -835,10 +818,9 @@
       </mods:title>
     </mods:titleInfo>
 
-
     <xsl:if test="tei:author">
       <xsl:for-each select="tei:author">
-        <xsl:if test="not(contains(., 'Unknown')) and not(contains(., 'unknown'))">
+        <xsl:if test="not(matches(., 'Unknown','i'))">
           <xsl:choose>
             <xsl:when test="tei:orgName">
               <xsl:call-template name="corporateName"/>
@@ -928,19 +910,22 @@
   <xsl:template name="constructTitle">
     <xsl:param name="title" required="yes"/>
     <xsl:param name="is-main" as="xs:boolean" select="false()"/>
-    <xsl:variable name="num-nonfiling" select="wwpft:number-nonfiling($title)"/>
+    <xsl:variable name="titleStr">
+      <xsl:apply-templates select="$title" mode="textOnly"/>
+    </xsl:variable>
+    <xsl:variable name="numNonfiling" select="wwpft:number-nonfiling($titleStr)"/>
     <mods:titleInfo>
       <xsl:if test="not($is-main)">
         <xsl:attribute name="type" select="'alternative'"/>
       </xsl:if>
-      <xsl:if test="$num-nonfiling > 0">
+      <xsl:if test="$numNonfiling > 0">
         <mods:nonSort>
-          <xsl:value-of select="substring($title,1,$num-nonfiling - 1)"/>
+          <xsl:value-of select="substring($titleStr,1,$numNonfiling - 1)"/>
         </mods:nonSort>
       </xsl:if>
       <mods:title>
-        <xsl:value-of select="if ($num-nonfiling = 0) then $title
-          else substring($title,$num-nonfiling+1)"/>
+        <xsl:value-of select="if ($numNonfiling = 0) then $titleStr
+                              else substring($titleStr,$numNonfiling+1)"/>
       </mods:title>
     </mods:titleInfo>
   </xsl:template>
