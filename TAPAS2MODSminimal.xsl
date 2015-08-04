@@ -4,6 +4,7 @@
   xmlns:mods="http://www.loc.gov/mods/v3"
   xmlns:tei="http://www.tei-c.org/ns/1.0"
   xmlns:wwpft="http://www.wwp.northeastern.edu/ns/functions"
+  xmlns:tapasft="http://www.tapasproject.org/ns/functions"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
   exclude-result-prefixes="tei xs xsl wwpft">
   <xsl:output indent="yes" method="xml"/>
@@ -25,9 +26,27 @@
     <xsl:value-of select="string-length(replace($title,$leadingArticlesRegex,'$1','i'))"/>
   </xsl:function>
   
+  <xsl:function name="tapasft:text-only">
+    <xsl:param name="element" as="node()"/>
+    <xsl:apply-templates select="$element" mode="textOnly"/>
+  </xsl:function>
+  
   <!-- TEMPLATES -->
   
   <xsl:template match="text()"/>
+  
+  <!-- process nodes in text-only mode -->
+    <xsl:template match="text()" mode="textOnly">
+    <!-- return same text node with any sequence of whitespace (including -->
+    <!-- leading or trailing) reduced to a single blank. -->
+    <xsl:variable name="protected" select="concat('␠', .,'␠')"/>
+    <xsl:variable name="normalized" select="normalize-space( $protected )"/>
+    <xsl:variable name="result" select="substring( substring-after( $normalized ,'␠'), 1, string-length( $normalized )-2 )"/>
+    <xsl:value-of select="$result"/>
+  </xsl:template>
+  <xsl:template match="*" mode="textOnly">
+    <xsl:apply-templates mode="textOnly"/>
+  </xsl:template>
   
   <xsl:template match="/">
     <xsl:apply-templates select="tei:TEI | tei:teiCorpus">
@@ -78,7 +97,9 @@
   </xsl:template>
   
   <xsl:template match="tei:teiHeader">
-    <xsl:variable name="allTitles" select="tei:fileDesc//tei:title"/>
+    <xsl:variable name="allTitles" select="tei:fileDesc//tei:title" as="item()*"/>
+    <xsl:variable name="distinctTitles" select="distinct-values(  for $i in $allTitles
+                                                                  return tapasft:text-only($i) )"/>
     <!-- When choosing the main title, prioritize those which have been 
       explicitly encoded for canonical use. -->
     <xsl:variable name="mainTitle">
@@ -112,16 +133,11 @@
       <xsl:with-param name="is-main" select="true()"/>
     </xsl:call-template>
     <!-- Construct the alternate titles. -->
-    <xsl:for-each select="$allTitles">
-      <xsl:variable name="title">
-        <xsl:apply-templates select="." mode="textOnly"/>
-      </xsl:variable>
+    <xsl:for-each select="$distinctTitles[not(. eq $mainTitle)]">
       <!-- Do not include duplicate main titles. --> <!-- Maybe we should cut out all duplicates? ~Ashley -->
-      <xsl:if test="not($title eq $mainTitle)">
-        <xsl:call-template name="constructTitle">
-          <xsl:with-param name="title" select="$title"/>
-        </xsl:call-template>
-      </xsl:if>
+      <xsl:call-template name="constructTitle">
+        <xsl:with-param name="title" select="."/>
+      </xsl:call-template>
     </xsl:for-each>
 
     <!-- name -->
@@ -248,14 +264,7 @@
     <!-- sponsor -->
     <xsl:if test="tei:fileDesc/tei:titleStmt/sponsor">
       <xsl:for-each select="tei:fileDesc/tei:titleStmt/tei:sponsor">
-        <xsl:choose>
-          <xsl:when test="tei:orgName">
-            <xsl:call-template name="corporateName"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:call-template name="personalName"/>
-          </xsl:otherwise>
-        </xsl:choose>
+        <xsl:call-template name="corporateName"/>
       </xsl:for-each>
     </xsl:if>
 
@@ -296,11 +305,20 @@
 
   </xsl:template>
 
-  <!-- PERSONAL NAMES -->
+  <!-- NAMES -->
 
   <xsl:template name="personalName">
     <mods:name type="personal">
       <xsl:call-template name="personalNamePart"/>
+      <xsl:call-template name="nameRole"/>
+    </mods:name>
+  </xsl:template>
+  
+  <xsl:template name="corporateName">
+    <mods:name type="corporate">
+      <mods:namePart>
+        <xsl:value-of select="tei:orgName"/>
+      </mods:namePart>
       <xsl:call-template name="nameRole"/>
     </mods:name>
   </xsl:template>
@@ -395,7 +413,6 @@
         </mods:namePart>
       </xsl:otherwise>
     </xsl:choose>
-
     <xsl:if test="tei:genName">
       <xsl:for-each select="tei:genName">
         <mods:namePart type="termsOfAddress">
@@ -403,7 +420,6 @@
         </mods:namePart>
       </xsl:for-each>
     </xsl:if>
-
     <xsl:if test="tei:persName/tei:title">
       <xsl:for-each select="tei:persName[1]/tei:title">
         <mods:namePart type="termsOfAddress">
@@ -411,7 +427,6 @@
         </mods:namePart>
       </xsl:for-each>
     </xsl:if>
-
     <xsl:if test="tei:roleName">
       <xsl:for-each select="tei:roleName">
         <mods:namePart type="termsOfAddress">
@@ -475,19 +490,6 @@
         </xsl:choose>
       </mods:roleTerm>
     </mods:role>
-  </xsl:template>
-
-  <!-- CORPORATE NAMES -->
-
-  <xsl:template name="corporateName">
-    <xsl:if test="tei:orgName">
-      <mods:name type="corporate">
-        <mods:namePart>
-          <xsl:value-of select="tei:orgName"/>
-        </mods:namePart>
-        <xsl:call-template name="nameRole"/>
-      </mods:name>
-    </xsl:if>
   </xsl:template>
 
   <!-- PUBLICATION STATEMENT -->
@@ -805,14 +807,12 @@
   </xsl:template>
 
   <xsl:template name="monoanalytic">
-
     <mods:titleInfo>
       <xsl:if test="tei:title[@type = 'filing']">
         <mods:nonSort>
           <xsl:value-of select="tei:title[@type = 'filing']"/>
         </mods:nonSort>
       </xsl:if>
-
       <mods:title>
         <xsl:value-of select="normalize-space(tei:title[1])"/>
       </mods:title>
@@ -864,8 +864,7 @@
     <mods:accessCondition>
       <xsl:if test="@target | @when
         | @notBefore | @notAfter
-        | @from | @to
-        ">
+        | @from | @to">
         <xsl:text>(licensing information: </xsl:text>
         <xsl:if test="@target">
           <url><xsl:value-of select="@target"/></url>
@@ -891,41 +890,23 @@
     </mods:accessCondition>
   </xsl:template>
   
-  <!-- process nodes in a text-only environment -->
- 
-  <xsl:template match="text()" mode="textOnly">
-    <!-- return same text node with any sequence of whitespace (including -->
-    <!-- leading or trailing) reduced to a single blank. -->
-    <xsl:variable name="protected" select="concat('␠', .,'␠')"/>
-    <xsl:variable name="normalized" select="normalize-space( $protected )"/>
-    <xsl:variable name="result" select="substring( substring-after( $normalized ,'␠'), 1, string-length( $normalized )-2 )"/>
-    <xsl:value-of select="$result"/>
-  </xsl:template>
-  
-  <xsl:template match="*" mode="textOnly">
-    <xsl:apply-templates mode="textOnly"/>
-  </xsl:template>
-  
   <!-- Given a title, contruct its <titleInfo>, including (limited) non-filing handling. -->
   <xsl:template name="constructTitle">
-    <xsl:param name="title" required="yes"/>
+    <xsl:param name="title" as="xs:string" required="yes"/>
     <xsl:param name="is-main" as="xs:boolean" select="false()"/>
-    <xsl:variable name="titleStr">
-      <xsl:apply-templates select="$title" mode="textOnly"/>
-    </xsl:variable>
-    <xsl:variable name="numNonfiling" select="wwpft:number-nonfiling($titleStr)"/>
+    <xsl:variable name="numNonfiling" select="wwpft:number-nonfiling($title)"/>
     <mods:titleInfo>
       <xsl:if test="not($is-main)">
         <xsl:attribute name="type" select="'alternative'"/>
       </xsl:if>
       <xsl:if test="$numNonfiling > 0">
         <mods:nonSort>
-          <xsl:value-of select="substring($titleStr,1,$numNonfiling - 1)"/>
+          <xsl:value-of select="substring($title,1,$numNonfiling - 1)"/>
         </mods:nonSort>
       </xsl:if>
       <mods:title>
-        <xsl:value-of select="if ($numNonfiling = 0) then $titleStr
-                              else substring($titleStr,$numNonfiling+1)"/>
+        <xsl:value-of select="if ($numNonfiling = 0) then $title
+                              else substring($title,$numNonfiling+1)"/>
       </mods:title>
     </mods:titleInfo>
   </xsl:template>
