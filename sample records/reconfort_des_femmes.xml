@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-model href="../../mariage.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" version="5.0" xml:id="reconfort_des_femmes">
+	<teiHeader>
+		<fileDesc>
+			<titleStmt>
+				<title type="main">Le reconfort des femmes qui se plaignent de l'absence et deffaut de leur mary.</title>
+				
+				<author>
+					<name>Anon.</name>
+					<date/>
+				</author>
+				<respStmt>
+					<resp>Header creation</resp>
+					<name>Claire Carlin</name>
+				</respStmt>
+				<respStmt>
+					<resp>Initial encoding</resp>
+					<name>Annick Nkurunziza</name>
+				</respStmt>
+				<respStmt>
+					<resp>Conversion from P4 to P5</resp>
+					<name>Eric Haswell</name>
+				</respStmt>
+				<respStmt>
+					<resp>Editing / tweaking</resp>
+					<name>Martin Holmes</name>
+				</respStmt>
+				<respStmt>
+					<resp>Proofing / correction / reference linking</resp>
+					<name>Claire Carlin</name>
+				</respStmt>
+			</titleStmt>
+			<extent>38 kb</extent>
+			<publicationStmt>
+				<idno>fantastique repentir.xml</idno>
+				<publisher>Humanities Media and Computing Centre </publisher>
+				<pubPlace>
+					<address>
+						<addrLine>University of Victoria</addrLine>
+						<addrLine>   </addrLine>
+					</address>
+				</pubPlace>
+				<date when="2004">2004</date>
+				<availability status="free">
+					<p>Copyright 2004. This text is freely available provided the text is
+						distributed with the header information provided.</p>
+				<p>Les droits de reproduction des gravures ont été achetés de la Bibliothèque Nationale de France grâce à une subvention accordée par le <ref target="http://www.sshrc-crsh.gc.ca/">Conseil de recherches en sciences humaines du Canada</ref>. Les autres éléments du projet (les contributions des éditeurs, les transcriptions des textes, l'encodage et le code) sont distribués sous les termes de cette licence: <ref target="http://creativecommons.org/licenses/by-nc-nd/2.5/ca/deed.fr_CA">Creative Commons Paternité - Pas d'Utilisation Commerciale - Pas de Modification 2.5 Canada</ref>.</p> </availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<monogr>
+					<author><name>Anon.<reg>Anon.</reg></name></author>
+					<title level="m">Le reconfort des femmes qui se plaignent de l'absence et deffaut de leur mary.</title>
+					    <title type="trunc">Le reconfort des femmes</title>
+						<imprint>
+							<date when="1615" notBefore="1600" notAfter="1625" cert="low">1600-1625</date>
+						</imprint>
+					</monogr>
+				</biblStruct>
+				<biblStruct>
+					<analytic>
+						<author><name>Anon.<reg>Anon.</reg></name></author>
+						<title level="a">Le reconfort des femmes qui se plaignent de l'absence et deffaut de leur mary.</title>				</analytic>
+					<monogr>
+						<editor><name><reg>Fournier, Édouard</reg><orig>Édouard Fournier</orig></name></editor>
+						<title level="m">Variétés Historiques et Littéraires. Recueil de pièces volantes rares et curieuses en prose et en vers</title>
+						<imprint>
+							<publisher>Pierre Jannet. Bibliothèque 	elzévirienne</publisher>
+							<pubPlace>Paris</pubPlace>
+							<date when="1856">1856</date>
+							<biblScope type="volume">Tome IV</biblScope>
+						</imprint>
+					</monogr><note>Bibliothèque Nationale de France call no. Z-62178</note>
+				</biblStruct>
+				<biblFull>
+					<titleStmt>
+						<title>Variétés Historiques et Littéraires. Recueil de pièces volantes rares
+							et curieuses en prose et en vers. </title>
+						<editor>Revues et annotées par M. Édouard Fournier. Tome IV.</editor>
+					</titleStmt>
+					<extent>??? pp.</extent>
+					<publicationStmt>
+						<idno>[Library call number, Biblioth. Nationale de France] Bnf Z-62178</idno>
+						<publisher>Jannet, Pierre. Bibliothèque elzévirienne.</publisher>
+						<pubPlace>Paris</pubPlace>
+						<date>1856</date>
+					</publicationStmt>
+				</biblFull>
+				<bibl>La leçon définitive de ce texte qui conseille à la femme patience et sagesse: "Il n'est homme si malheureux qui, employé, ne serve à quelque chose".</bibl>
+			</sourceDesc>
+		</fileDesc>
+		
+	</teiHeader>
+	<text>
+		<body>
+			<div>
+				<pb n="316"/>
+				<head>
+					<hi rend="font-style: italic;">Le reconfort des femmes qui se plaignent de l'absence et
+						deffaut de leur mary.</hi>
+				</head>
+				<lg>
+					<l>Si ton mary ça et là se pourmeine</l>
+					<l>Pour changer d'air, n'en ayez pensement :</l>
+					<l>Il faict cela pour ton soulagement</l>
+					<l>Et pour dispos te relever de peine.</l>
+				</lg>
+				<lg>
+					<l>Mais, s'il prend chose que dire il n'ose,</l>
+					<l>Pour avoir, sot, en eau trouble pesché,</l>
+					<l>Le voilà bien puny de son peché!</l>
+					<l>Laisse-le à part, sa santé se repose.</l>
+				</lg>
+				<lg>
+					<l>S'il a perdu en son aage d'enfance</l>
+					<l>Un grain des siens, tu n'y prens pas plaisir,</l>
+					<l>Tu m'entens bien ; mais il vaut mieux choisir</l>
+					<l>Un bon tesmoing que deux sans souvenance.</l>
+				</lg>
+				<lg>
+					<l>Si ton mary va son argent despendre</l>
+					<l>A la taverne, il a quelques raisons :</l>
+					<l>On ne despend pas tant à la maison,</l>
+					<l>Et l'ordinaire en est quelque peu moindre.</l>
+				</lg>
+			  <note>La gravure <ref xml:id="quatrieme_strophe" target="../../anthology/images/corrige_si_tu_peux.xml#femme_battue">Corrige si tu peux</ref> présente le même message sous un ton moins ironique.</note>
+				<lg>
+					<l>Si tous les jours comme insencé il crie,</l>
+					<l>Tempestatif, cholère, sans repos,</l>
+					<l>Faisant mestier de battre à tous propos,</l>
+					<l>Endure tout : bien ayme qui chastie.</l>
+				</lg>
+				<lg>
+					<l>Si, chargé d'ans, il s'accoustume au jeusne,</l>
+					<l>Ne pouvant plus à la chasse trotter,</l>
+					<l>Tu sais qu'il faut vieillesse supporter; </l>
+					<l>Sois patiente : après le vieil un jeune.</l>
+				</lg>
+				<lg>
+					<l>Si à pourvoir sa maison il ne pense,</l>
+					<l>En temps &amp; lieu, de charbon &amp; de bois,</l>
+					<l>Tu n'en mettras pas tant à chasque fois</l>
+					<l>En ton fouyer, pour eviter despense.</l>
+				</lg>
+				<lg>
+					<l>Si tu pretens l'accuser d'avarice,</l>
+					<l>D'autant qu'il veut son argent espargner,</l>
+					<l>C'est qu'il a eu de peine à le gaigner;</l>
+					<l>Ne t'en soucie : espargner n'est pas vice.</l>
+				</lg>
+				<lg>
+					<l>Si, soupçonneux, il n'a ny goust ny grace,</l>
+					<l>Ne s'esmouvant pour gay te caresser,</l>
+					<l>Repose-toy, tu en seras plus grasse.</l>
+				</lg>
+				<lg>
+					<l>Si à jouer son argent il s'adonne,</l>
+				</lg>
+				<!-- stanza closed to allow inserted linebreak:- revisit this? -->
+				<pb n="318"/>
+				<lg>
+					<l>Il a desir de riche devenir;</l>
+					<l>Mais il ne veut jamais se souvenir</l>
+					<l>Que l'homme droict ne fait tort à personne.</l>
+				</lg>
+				<lg>
+					<l>S'il est parfois chagrin et fantastique,</l>
+					<l>Il doit avoir quelque perfection</l>
+					<l>Pour contre-poids de l'imperfection :</l>
+					<l>L'homme d'esprit est souvent lunatique.</l>
+				</lg>
+				<lg>
+					<l>Si de bonne heur en soudaine maniere</l>
+					<l>Il a son bien et le tien despendu,</l>
+					<l>N'en fais semblant, tu n'as pas tout perdu :</l>
+					<l>Tu t'es aidée à en faire grande chère.</l>
+				</lg>
+				<lg>
+					<l>Si par excès l'humeur froide le tourmente,</l>
+					<l>Pour aller doux il laisse le courir,</l>
+					<l>Ne te pouvant au besoin secourir :</l>
+					<l>Femme d'honneur de bien peu se contente.</l>
+				</lg>
+				<lg>
+					<l>S'il ne faict cas d'ouir ta remonstrance,</l>
+					<l>Voulant tousjours à sa teste obeir,</l>
+					<l>Si mal luy vient, ne te veuille esbahir :</l>
+					<l>Conseil de femme est meilleur qu'on ne pense.</l>
+				</lg>
+				<lg>
+					<l>S'il a esté forgé du costé gauche,</l>
+					<l>Et toy lignée à rebours de raison,</l>
+					<l>Vous n'aurez point de bruit en la maison;</l>
+					<l>Quant à ce poinct, vous vivrez sans reproche.</l>
+				</lg>
+				<lg>
+					<l>Quand un homme mal plaisant le resveille,</l>
+					<l>Luy demandant quelque debte payer,</l>
+					<l>S'il est fasché, ne t'en veuille esmayer :</l>
+					<l>Faute d'argent es douleur non pareille!<note>Chanson XVe-XVIe qui devient
+							proverbe.</note>
+					</l>
+				</lg>
+				<lg>
+					<l>S'il va faignant une folle simplesse</l>
+				</lg>
+				<!-- stanza closed to allow inserted linebreak: revisit this? -->
+				<pb n="319"/>
+				<lg>
+					<l>En tems et lieu, il n'y a nul danger;</l>
+					<l>Asseure-toy que , pour s'advantager,</l>
+					<l>Il convertit sa folie en sagesse.</l>
+				</lg>
+				<lg>
+					<l>Si sous son ongle un glus tirant s'amasse,<note resp="19thc editor">Note 1 :
+							Les voleurs s'enduisent les mains de glu ou de poix.</note>
+					</l>
+					<l>Tu mangeras du gibier appresté,</l>
+					<l>Car par malheur l'homme au droict arresté</l>
+					<l>Ne prend plus rien s'il ne va à la chasse. </l>
+				</lg>
+				<lg>
+					<l>S'il est un sot superbe sans doctrine,</l>
+					<l>Voilà le train des jeunes maintenant,</l>
+					<l>Il parviendra, mais qu'il soit souvenant</l>
+					<l>De parler peu et tenir bonne mine.</l>
+				</lg>
+				<lg>
+					<l>Mais, s'il dispute, il tombera en friche.</l>
+					<l>Pauvrette, helas! de quoy te fasches-tu?</l>
+					<l>Tout le sçavoir n'y sert pas d'un festu,</l>
+					<l>Il gaignera moyennant qu'il soit riche.</l>
+				</lg>
+				<lg>
+					<l>Si bien pensant il s'adonne à l'estude,</l>
+					<l>Il pincera (sans rire) l'argent et l'or;</l>
+					<l>Tu garderas la clef de son thresor,</l>
+					<l>Prenant repos ans grand'sollicitude.</l>
+				</lg>
+				<pb n="320"/>
+				<lg>
+					<l>S'il est soldat et amy de la guerre,</l>
+					<l>Par son respect on te respectera.</l>
+					<l>A son retour, brave, il t'apportera</l>
+					<l>Quelque joyau venant d'estrange terre.</l>
+				</lg>
+				<lg>
+					<l>Si quelquefois le rheume le tourmente,</l>
+					<l>Tel humeur vient ses poulmons arrouser,</l>
+					<l>Ce rheume peut à la mort s'opposer,</l>
+					<l>Coupant le chemin à une fièvre ardente.</l>
+				</lg>
+				<lg>
+					<l>S'il est vexé d'une morne paresse,</l>
+					<l>Il s'en ira de bonne heure coucher :</l>
+					<l>Tu ne craindras qu'il te vienne empescher</l>
+					<l>Le doux effect d'une libre promesse.</l>
+				</lg>
+				<lg>
+					<l>Si, impudent, sans mesure il se prise,</l>
+					<l>Entrant partout comme un audacieux,</l>
+					<l>Laisse-luy faire, il n'en vaudra que mieux :</l>
+					<l>A telles gens fortune favorise.</l>
+				</lg>
+				<lg>
+					<l>Si, affronteur, il vante sa richesse,</l>
+					<l>Il te fera tousjours brave marcher ;</l>
+					<l>Quand il s'ira par contrainte cacher,</l>
+					<l>Tu demeureras du bien d'autruy maistresse.</l>
+				</lg>
+				<lg>
+					<l>Si à mal faire hardy is se dispose,</l>
+					<l>N'estant jamais d'aucun bien desireux,</l>
+					<l>Pense qu'il n'est homme si malheureux</l>
+					<l>Qui, employé, ne serve à quelque chose.</l>
+				</lg>
+			</div>
+		</body>
+	</text>
+</TEI>

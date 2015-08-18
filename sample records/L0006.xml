@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?oxygen RNGSchema="schemas/dorr_schema.rnc" type="compact"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+    <teiHeader>
+        <fileDesc>
+            <titleStmt>
+                <title level="a">
+                    <persName ref="#thomas_w_dorr">
+                        <forename type="first">Thomas</forename>
+                        <forename type="middle">Wilson</forename>
+                        <surname>Dorr</surname>
+                    </persName>
+                    to
+                    <persName ref="#william_m_chace">
+                        <forename>William M.</forename>
+                        <surname> Chace</surname>
+                    </persName>
+                    : an Electronic Transciption </title>
+                <title level="s">
+                    The 
+                    <persName ref="#thomas_w_dorr">
+                        <forename type="first">Thomas</forename>
+                        <forename type="middle">Wilson</forename>
+                        <surname>Dorr</surname>
+                    </persName>
+                    Letters Project
+                </title>
+                
+                <author>
+                    <persName ref="#thomas_w_dorr">
+                        <forename type="first">Thomas</forename>
+                        <forename type="middle">Wilson</forename>
+                        <surname>Dorr</surname>
+                    </persName>
+                </author>
+                <respStmt>
+                    <resp>Encoded by</resp>
+                    <persName ref="#hailie_d_posey">
+                        <forename>Hailie D.</forename>
+                        <surname>Posey</surname>
+                    </persName>
+                </respStmt>
+            </titleStmt>
+            
+            <publicationStmt>
+                <publisher><orgName>Providence College Digital Publishing Services</orgName>,
+                    <orgName>Phillips Memorial Library</orgName></publisher>
+                <address>
+                <addrLine>Box 1841</addrLine>
+                    <addrLine>Providence College, Phillips Memorial Library</addrLine>
+                    <addrLine>1 Cunningham Square</addrLine>
+                    <addrLine>Providence, RI 02918</addrLine>
+                    <addrLine>USA</addrLine>
+                <addrLine>url:mailto:dps@providence.edu</addrLine>
+                <addrLine>url:http://www.providence.edu/LIBRARY/dps/Pages/default.aspx</addrLine>
+                <addrLine>401-865-1517</addrLine>
+                </address>
+                <pubPlace>Providence, Rhode Island</pubPlace>
+                <date>2012</date>
+                <availability status="restricted">
+                    <p><!-- In process of writing availability statement --></p>
+                </availability>
+            </publicationStmt>
+            
+            <seriesStmt>
+                <title level="s">The 
+                    <persName ref="#thomas_w_dorr">
+                        <forename type="first">Thomas</forename>
+                        <forename type="middle">Wilson</forename>
+                        <surname>Dorr</surname>
+                    </persName>
+                    Letters Project
+                </title>
+                <editor>Letters selected, edited, and transcribed from the original manuscripts by
+                    <persName ref="#erik_j_chaput">
+                        <roleName>Dr.</roleName>
+                        <forename>Erik J.</forename>
+                        <surname>Chaput</surname>
+                    </persName> 
+                    and
+                    <persName ref="#russell_desimone">
+                        <forename>Russell</forename>
+                        <surname>DeSimone</surname>
+                    </persName> 
+                    with the assistance of 
+                    <persName ref="#edward_e_andrews">
+                        <roleName>Dr.</roleName>
+                        <forename>Edward E.</forename>
+                        <surname>Andrews</surname>
+                    </persName>
+                </editor>
+            </seriesStmt>
+            
+            <sourceDesc>
+                <bibl>
+                    <persName ref="#thomas_w_dorr">
+                        <forename type="first">Thomas</forename>
+                        <forename type="middle">Wilson</forename>
+                        <surname>Dorr</surname>
+                    </persName>
+                    to
+                    <persName ref="#william_m_chace">
+                        <forename>William M.</forename>
+                        <surname> Chace</surname>
+                    </persName>, 
+                    <date when="1837-07-25">25 July 1837</date>.  
+                    <persName ref="#sidney_s_smith">
+                        <forename type="first">Sidney</forename> 
+                        <forename type="middle">Smith</forename> 
+                        <surname>Rider</surname>
+                    </persName> Collection, 
+                    <orgName>John Hay Library</orgName>, 
+                    <orgName>Brown University</orgName>.                                      
+                </bibl>
+                <msDesc>
+                    <msIdentifier>
+                        <repository>John Hay Library, Brown University</repository>
+                        <collection></collection>
+                    </msIdentifier>
+                    <physDesc>
+                        <objectDesc>
+                            <p>A four-page manuscript letter.</p>
+                        </objectDesc>
+                    </physDesc>
+                    <history>
+                        <origin>
+                            <origDate when="1837-07-25">July 25, 1837</origDate>
+                        </origin>
+                    </history>
+                </msDesc>
+            </sourceDesc>
+            
+        </fileDesc>
+        
+        <encodingDesc>
+            <projectDesc>
+                <p>The 
+                    <persName ref="#thomas_w_dorr">
+                        <forename type="first">Thomas</forename>
+                        <forename type="middle">Wilson</forename>
+                        <surname>Dorr</surname>
+                    </persName>
+                    Letters Project includes digital transcriptions of thirty letters from the Dorr
+                    Correspondence files in the 
+                    <persName ref="#sidney_s_smith">
+                        <forename>Sidney S.</forename>
+                        <forename> Rider </forename>
+                    </persName> 
+                    Collection at the <orgName>John Hay Library</orgName> (<orgName>Brown University</orgName>), the 
+                    <persName ref="#james_f_simmons">
+                        <forename type="first">James</forename>
+                        <forename type="middle">Fowler</forename>
+                        <surname>Simmons</surname>
+                    </persName>                        
+                    Papers at the <orgName>Library of Congress</orgName>, the <orgName>Gilder Lehman Institute</orgName>, 
+                    and one letter from the private collection of 
+                    <persName ref="#richard_slaney">Richard Slaney</persName>. 
+                    The goal of the project is to further the digital exploration of 
+                    <placeName ref="#ri">Rhode Island</placeName> 
+                    History through the combination of traditional scholarly editing with cutting edge digital
+                    technologies. These letters illustrate aspects of race, reform, antislavery and
+                    proslavery politics, and, of course, the <name>Dorr Rebellion</name>. The
+                    selection of letters was governed by the notion of what would work best in the
+                    high school and college classroom, especially in terms of length and
+                    readability. 
+                    The head editors (
+                    <persName ref="#russell_desimone">
+                        <surname>DeSimone</surname>
+                    </persName> 
+                    and 
+                    <persName ref="#erik_j_chaput">
+                        <surname>Chaput</surname>
+                    </persName>) also selected letters that had previously not been cited by historians of the 
+                    <name>Dorr Rebellion</name>. The project was funded in part by a grant from the
+                    <orgName>Rhode Island Council for the Humanities</orgName>. </p>
+            </projectDesc>
+            <samplingDecl>
+                <p>There are more than 2500 hundred letters that are known to exist that either
+                    pertain to the <name>Dorr Rebellion</name> and its aftermath or the early life
+                    of the rebellion’s leader 
+                    <persName ref="#thomas_w_dorr">
+                        <forename type="first">Thomas</forename>
+                        <forename type="middle">Wilson</forename>
+                        <surname>Dorr</surname>
+                    </persName>.
+                    In order to keep the number of letters selected for this project to a manageable
+                    number the editors focused on 
+                    <persName ref="#thomas_w_dorr">
+                        <surname>Dorr</surname>’s
+                    </persName> 
+                    early life (<orgName>Philips Exeter Academy</orgName> and <orgName>Harvard University</orgName>), 
+                    his early law career, his political career in the mid-1830s, and his emergence as the leader of the
+                    reform movement that sought to revise <placeName ref="#ri">Rhode Island</placeName>'s 
+                    archaic governing structure.</p>
+            </samplingDecl>
+            <editorialDecl>
+                <p><!-- Create as we develop editorial practices.--></p>
+            </editorialDecl>
+        </encodingDesc>
+        
+    </teiHeader>
+    
+    <text>
+        <front> 
+            
+            <div type="introduction">
+                <p>In <date when="1837">1837</date>, 
+                    <persName ref="#william_m_chace"><forename>William</forename> <surname>Chace</surname></persName> 
+                    served as the corresponding secretary of the <orgName>Rhode Island Anti-Slavery Society</orgName>, 
+                    an organization founded in <date when="1835">1835</date> by the prominent <placeName ref="#ri">Rhode Island</placeName> 
+                    Quaker <persName>Arnold Buffum</persName>. <persName ref="#william_m_chace"><forename>Chace</forename></persName> wrote 
+                    to <persName ref="#thomas_w_dorr"><surname>Dorr</surname></persName>, who was running for <orgName>Congress</orgName> as a 
+                    Constitutionalist in the August election, in order to obtain his views on slavery. 
+                    Before he penned his reply, <persName ref="#thomas_w_dorr"><surname>Dorr</surname></persName> copied 
+                    <persName ref="#william_m_chace"><surname>Chace</surname>'s</persName> original questions. </p>
+            </div>
+        
+        </front>
+        
+        <body>
+            
+            <div type="letter">
+                <pb n="1" facs="L0006_18270725_001.tif"/>
+                <opener>
+                    <lb/><dateline><placeName ref="#providence_ri">Providence</placeName>, <date when="1837-07-25">July 25, 1837</date></dateline>
+                    
+                    <lb/>(copy)
+                    
+                    <lb/><persName ref="william_m_chace"><abbr>Mr.</abbr> <forename type="first" full="abb">Wm</forename><forename type="middle" full="init">M.</forename> <surname>Chace</surname>, 
+                    <lb/><roleName>Corresponding Secretary</roleName></persName> of
+                    <lb/>the <orgName>R.I. State Anti-Slavery 
+                    <lb/>Society</orgName>, 
+                    
+                    <lb/><salute>Sir</salute>, 
+                </opener>
+               
+                    <p>Your letter of <date when="1837-07-18">July 18th</date>, pro-
+                        <lb/>posing several questions to me “as a candidate for the suffrages 
+                        <lb/>of the people of <placeName ref="ri">Rhode Island</placeName>, to represent them in <name>Congress</name>,” and in 
+                        <lb/>behalf of those of our fellow citizens, “who are associated for the extinct
+                        <lb/>ion of slavery” was duly received. </p>
+                
+                <p><lb/>The Questions are</p>
+                <list type="ordered">
+                    <lb/><label>1.</label> <item>“Do you believe that <name>Congress</name> has the right to abolish 
+                    <lb/>slavery in the <placeName ref="#dc">District of Columbia</placeName>?” </item>
+                    <lb/><label>2.</label> <item>“Do you believe that <name>Congress</name> should sustain unabridged 
+                    <lb/>the right of the People to petition for the Abolition of Slavery &amp; 
+                        <lb/>the Slave-Trade in the <placeName ref="#dc">District of Columbia</placeName>?”</item>  
+                    <lb/><label>3.</label> <item>“Do you believe that Members of <name>Congress</name> should sustain,
+                    <lb/>by their influences &amp; vote, the prayer of those who petition for the 
+                        <lb/>Immediate Abolition of Slavery &amp; the Slave-Trade in the <placeName ref="#dc">District 
+                        <lb/>of Columbia</placeName>?”</item>
+                    <lb/><label>4.</label> <item>“Are you in favor of or against the annexation of <placeName ref="texas">Texas</placeName> to the 
+                    <lb/><placeName ref="united_states">United States</placeName>?” </item>
+                </list>
+                   
+                <lb/><p>To which I reply,</p> 
+                <list type="ordered">
+                    <lb/><label>1. </label><item><p>I have no doubt that <name>Congress</name> has the right to abolish slavery
+                    <lb/>in the <placeName ref="#dc">District of Columbia</placeName>. The terms of the cession of the               
+                
+                <pb n="2" facs="L0006_18270725_002.tif"/>
+                    
+                        <lb/><placeName ref="#dc">District of Columbia</placeName> contain, and could contain, no restriction of the powers of 
+                    <lb/><name>Congress</name>; the <name>National Legislature</name> not being authorized by the 
+                    <lb/><name>Constitution</name> to accept of any cession which did not include the 
+                    <lb/>right “to exercise exclusive legislation in all cases whatsoever.” </p> </item>
+                    
+                    <label>2. </label><item><p>It is the undeniable right of the people to communicate 
+                        <lb/>freely with their representatives in <name>Congress</name>, in such manner 
+                        <lb/>as they may see fit, either by memorial, petition, or otherwise; 
+                        <lb/>although the form of petition from the people to their representatives 
+                        <lb/>is better adapted to monarchical than to Republican institutions. 
+                        <lb/>It is the plain duty of the Representative to present these communica-
+                        <lb/>tions to the body of which he is a member; and it is the equally plain 
+                        <lb/>duty of that body respectfully to receive and to entertain them, without 
+                        <lb/>stopping to determine whether the suggestions or requests which they 
+                        <lb/>contain are constitutional, expedient &amp; popular, or the reverse. A fair 
+                        <lb/>judgment upon the merits of each application will depend on the usual 
+                        <lb/>reference &amp; inquiry. Slavery &amp; the Slave-Trade in the <placeName ref="#dc">District of Col-
+                        <lb/>umbia</placeName> are subjects of deep and increasing interest to the people; and 
+                        <lb/>the right not only of discussing these subjects freely, but of making known 
+                        <lb/>the opinions formed upon them to the Representatives in their individual
+                        <lb/>&amp; collective capacities needs no argument to enforce it. It ought to be 
+                        <lb/>sustained by <name>Congress</name> without qualification or abridgement. The late pro-
+                        <lb/>ceedings of the <name>House of Representatives</name> of the <placeName ref="#united_states">United States</placeName> toward 
+                        <lb/>petitioners for the abolition of Slavery &amp; the Slave Trade in the <placeName ref="#dc">District</placeName> can 
+                        <lb/>only be characterized as disrespectful, arbitrary, and unconstitutional. The freedom 
+                        <lb/>of speech, of the press, &amp; of making known to the representative body, with the 
+                        <lb/>assurance of proper consideration, the opinions of their Constituents, or of 
+                        <lb/>any portion of them, are all great branches of Public Liberty, which 
+                        <lb/>ought to be jealously, faithfully, &amp; resolutely guarded by the people. Gag-
+                        <lb/>Laws &amp; Resolutions, whether originating in <placeName ref="#ri">Rhode Island</placeName>, or at <placeName ref="#dc">Washington</placeName>, 
+                
+                <pb n="3" facs="L0006_18270725_003.tif"/>
+                        
+                        <lb/>bear the same marks of treason, and deserve a common fate.</p></item>
+                    
+                    <lb/><label>3.</label><item><p>3. I believe that a candid investigation of American Slavery in all its 
+                        <lb/>nature and bearings will satisfy most men that it ought to come to an end; 
+                        <lb/>and, further, that there is no more danger in bringing it to an end im-
+                        <lb/>mediately, than there is in terminating any other act or system of injustice. 
+                        <lb/>Abolitionists contend that the right of property in man ought to cease 
+                        <lb/>without delay; and that the rights and duties of the slave should be re-
+                        <lb/>mitted to the custody of the law. They seek to bring about this result 
+                        <lb/>by addressing themselves to the mind &amp; heart of the people both in &amp; out of the 
+                        <lb/>slaveholding communities. They are encouraged by the history of the last 
+                        <lb/>fifty years in believing that all social evils have an ultimate &amp; sure remedy 
+                        <lb/>in the power of public opinion, when it becomes sufficiently enlightened. At 
+                        <lb/>the right state of this opinion the necessary legislation on the part of the 
+                        <lb/>Slaveholding States will follow as a matter of course. But so far as 
+                        <lb/>Slavery is a national evil it admits of &amp; requires a national remedy. 
+                        <lb/>The non-Slaveholding States are responsible for its existence in the <placeName ref="#dc">Dis-
+                        <lb/>trict of Columbia</placeName> to the extent respectively of their representative power in 
+                        <lb/><name>Congress</name>; and they can only be relieved from this responsibility, when Slavery 
+                        <lb/>&amp; the Slave-Trade, so far as they fall within the range of national legisla-
+                        <lb/>tion, shall have become extinct; and the sooner they are relieved the better.</p>
+                        
+                        <lb/><p>The Slave-Trade of the <placeName ref="#dc">District</placeName> exhibits nearly the same 
+                            <lb/>horrors as the foreign trade, which has been made piracy as law, as it has 
+                            <lb/>always been in fact; and, if Members of <name>Congress</name> will do their duty, by sus-
+                            <lb/>taining, with their influence &amp; votes, the prayer of those who petition for the 
+                            <lb/>immediate abolition of Slavery &amp; the Slave Trade in the <placeName ref="#dc">District of Columbia</placeName>, the 
+                            <lb/>deepest stain now resting on the national character will be speedily ef-
+                            <lb/>faced.</p></item>
+                    
+                    <lb/><label>4.</label><item><p>Asides from the question of slavery connected with the annexation of <placeName ref="#tx">Texas</placeName> to the                     
+                
+                <pb n="4" facs="L0006_18270725_004.tif"/>
+                        
+                        <lb/><placeName ref="#united_states">United States</placeName>, it might be seriously doubted whether any farther addition to 
+                        <lb/>our immense territory is desirable or expedient. But the main question, and 
+                        <lb/>one which cannot be mistaken, now is – Shall a new state be admitted 
+                        <lb/>into the Union with sufficient territory to make four or five other Slave States, 
+                        <lb/>and, as necessary consequences, shall a preponderance be secured to the Slave 
+                        <lb/>States, the day of emancipation be indefinitely postponed, and a perpetual lease 
+                        <lb/>be extended to a noxious and fearful institution, which will thus be fast-
+                        <lb/>ened upon the vitals of the country?  In such a question both philanthro-
+                        <lb/>py &amp; patriotism demand of every free citizen the interposition of a decided 
+                        <lb/>&amp; prompt negative. Desiring to be numbered among such citizens I am 
+                        <lb/>against the annexation of <placeName ref="#tx">Texas</placeName> to the <placeName ref="#united_states">United States</placeName>. </p></item>
+                
+                </list>
+                
+                <closer>
+                    <lb/><salute>Respectfully yours</salute>, 
+                    <lb/><signed><persName ref="#thomas_w_dorr">
+                        <forename type="first">Thomas</forename>
+                        <forename type="middle" full="init">W.</forename>
+                        <surname>Dorr</surname>
+                    </persName></signed>
+                 </closer>
+                
+            </div>
+            
+        </body>
+        
+        <back>
+            
+            <div type="questions">
+                <p>Questions to consider: </p>
+                <p>Does <persName ref="#thomas_w_dorr"><surname>Dorr</surname></persName> believe that <orgName>Congress</orgName> had the authority to deal with 
+                    slavery in the <placeName ref="#dc">District of Columbia</placeName>? </p>                   
+                <p>Why was the acquisition of the independent country of <placeName>Texas</placeName> a political issue in <date when="1837">1837</date>?</p>   
+            </div>
+            
+        </back>
+                        
+    </text>
+    
+</TEI>
