@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<crosswalk>
+  <taxonomies>
+    <taxonomy id="marc">
+      <ref type="vocabulary">http://www.loc.gov/marc/relators/</ref>
+    </taxonomy>
+    <taxonomy id="tei">
+      <ref type="xml-namespace">http://www.tei-c.org/ns/1.0</ref>
+    </taxonomy>
+  </taxonomies>
+  <concepts>
+    <concept>
+      <xNode ns="#tei" name="author"/>
+      <vocab list="#marc" key="aut">
+        <term preferred="true">Author</term>
+      </vocab>
+    </concept>
+    <concept>
+      <xNode ns="#tei" name="editor"/>
+      <vocab list="#marc" key="edt">
+        <term preferred="true">Editor</term>
+      </vocab>
+    </concept>
+    <concept>
+      <xNode ns="#tei" name="funder"/>
+      <vocab list="#marc" key="fnd">
+        <term preferred="true">Funder</term>
+      </vocab>
+    </concept>
+    <concept>
+      <xNode ns="#tei" name="principal"/>
+      <vocab list="#marc" key="rth">
+        <term preferred="true">Research team head</term>
+      </vocab>
+    </concept>
+    <concept>
+      <xNode ns="#tei" name="sponsor"/>
+      <vocab list="#marc" key="spn">
+        <term preferred="true">Sponsor</term>
+        <term>Sponsoring body</term>
+      </vocab>
+    </concept>
+    <concept>
+      <xNode ns="#tei" name="distributor"/>
+      <vocab list="#marc" key="">
+        <term preferred="true">Distributor</term>
+      </vocab>
+    </concept>
+    <concept>
+      <xNode ns="#tei" name="publisher"/>
+      <xNode ns="#tei" name="authority"/>
+      <vocab list="#marc" key="pbl">
+        <term preferred="true">Publisher</term>
+      </vocab>
+    </concept>
+    <concept>
+      <vocab list="#marc" key="ctb">
+        <term preferred="true">Contributor</term>
+        <note>This is a generalized term. Use more specific codes first.</note>
+      </vocab>
+    </concept>
+    <concept>
+      <vocab list="#marc" key="mrk">
+        <term preferred="true">Markup editor</term>
+        <term>Encoder</term>
+      </vocab>
+    </concept>
+    <concept>
+      <vocab list="#marc" key="trl">
+        <term preferred="true">Translator</term>
+      </vocab>
+    </concept>
+  </concepts>
+</crosswalk>

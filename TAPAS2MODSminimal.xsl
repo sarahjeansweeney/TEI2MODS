@@ -210,7 +210,7 @@
   <xsl:template match="tei:author | tei:editor | tei:funder | tei:principal | tei:sponsor" mode="contributors">
     <xsl:if test="not(matches(., 'unknown', 'i'))">
       <mods:name>
-        <xsl:apply-templates/>
+        <xsl:apply-templates mode="contributors"/>
         <xsl:call-template name="nameRole"/>
       </mods:name>
     </xsl:if>
@@ -228,7 +228,7 @@
     </xsl:variable>
     <xsl:for-each select="tei:name | tei:persName | tei:orgName">
       <mods:name>
-        <xsl:apply-templates select="."/>
+        <xsl:apply-templates select="." mode="contributors"/>
         <xsl:copy-of select="$role"/>
       </mods:name>
     </xsl:for-each>
@@ -244,19 +244,19 @@
     
   </xsl:template>
   
-  <xsl:template match="tei:orgName">
+  <xsl:template match="tei:orgName" mode="contributors">
     <xsl:attribute name="type" select="'corporate'"/>
     <mods:namePart>
       <xsl:apply-templates mode="textOnly"/>
     </mods:namePart>
   </xsl:template>
   
-  <xsl:template match="tei:persName">
+  <xsl:template match="tei:persName" mode="contributors">
     <xsl:attribute name="type" select="'personal'"/>
     <xsl:call-template name="personalNamePart"/>
   </xsl:template>
   
-  <xsl:template match="tei:name">
+  <xsl:template match="tei:name" mode="contributors">
     <!-- @mods:type should only be used when <tei:name> is explicitly personal 
       or corporate. Otherwise, no judgement is made and no attribute included. -->
     <xsl:choose>
@@ -293,8 +293,8 @@
     </mods:name>
   </xsl:template>
   
-  <xsl:template name="creators">
-    <!-- author -->
+  <!--<xsl:template name="creators">
+    <!-\- author -\->
     <xsl:if test="tei:fileDesc/tei:titleStmt/tei:author">
       <xsl:for-each select="tei:fileDesc/tei:titleStmt/tei:author">
         <xsl:if test="not(matches(., 'unknown', 'i'))">
@@ -310,7 +310,7 @@
       </xsl:for-each>
     </xsl:if>
 
-    <!-- editor -->
+    <!-\- editor -\->
     <xsl:if test="tei:fileDesc/tei:titleStmt/tei:editor">
       <xsl:for-each select="tei:fileDesc/tei:titleStmt/tei:editor">
         <xsl:choose>
@@ -324,7 +324,7 @@
       </xsl:for-each>
     </xsl:if>
 
-    <!-- funder -->
+    <!-\- funder -\->
     <xsl:if test="tei:fileDesc/tei:titleStmt/tei:funder">
       <xsl:for-each select="tei:fileDesc/tei:titleStmt/tei:funder">
         <xsl:choose>
@@ -338,7 +338,7 @@
       </xsl:for-each>
     </xsl:if>
 
-    <!-- principal -->
+    <!-\- principal -\->
     <xsl:if test="tei:fileDesc/tei:titleStmt/tei:principal">
       <xsl:for-each select="tei:fileDesc/tei:titleStmt/tei:principal">
         <xsl:choose>
@@ -352,14 +352,14 @@
       </xsl:for-each>
     </xsl:if>
 
-    <!-- sponsor -->
+    <!-\- sponsor -\->
     <xsl:if test="tei:fileDesc/tei:titleStmt/sponsor">
       <xsl:for-each select="tei:fileDesc/tei:titleStmt/tei:sponsor">
         <xsl:call-template name="corporateName"/>
       </xsl:for-each>
     </xsl:if>
 
-    <!-- responsibility statement -->
+    <!-\- responsibility statement -\->
     <xsl:if test="tei:fileDesc/tei:titleStmt/tei:respStmt">
       <xsl:for-each select="tei:fileDesc/tei:titleStmt/tei:respStmt">
         <xsl:choose>
@@ -394,7 +394,7 @@
       </xsl:for-each>
     </xsl:if>
 
-  </xsl:template>
+  </xsl:template>-->
 
   <!-- NAMES -->
 
@@ -551,46 +551,56 @@
   </xsl:template>
 
   <xsl:template name="nameRole">
-    <xsl:param name="localName" select="local-name()"/>
-    <xsl:choose>
-      <!-- TEI elements belonging to model.respLike -->
-      <xsl:when test="self::tei:author">
-        <xsl:text>Author</xsl:text>
-      </xsl:when>
-      <xsl:when test="self::tei:editor">
-        <xsl:text>Editor</xsl:text>
-      </xsl:when>
-      <xsl:when test="self::tei:funder">
-        <xsl:text>Funder</xsl:text>
-      </xsl:when>
-      <xsl:when test="self::tei:principal">
-        <xsl:text>Research team head</xsl:text>
-      </xsl:when>
-      <xsl:when test="self::tei:sponsor">
-        <xsl:text>Sponsor</xsl:text>
-      </xsl:when>
-      <!-- TEI elements belonging to model.publicationStmtPart.agency -->
-      <xsl:when test="self::tei:distributor">
-        <xsl:text>Distributor</xsl:text>
-      </xsl:when>
-      <xsl:when test="self::tei:publisher or self::tei:authority">
-        <xsl:text>Publisher</xsl:text>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:message>
-          <xsl:text>internal error: unable to ascertain role of </xsl:text>
-          <xsl:value-of select="local-name(.)"/>
-        </xsl:message>
-      </xsl:otherwise>
-    </xsl:choose>
+    <xsl:param name="localName" select="local-name(.)"/>
+    <xsl:variable name="relator">
+      <xsl:choose>
+        <!-- TEI elements belonging to model.respLike -->
+        <xsl:when test="$localName eq 'author'">
+          <xsl:text>Author</xsl:text>
+        </xsl:when>
+        <xsl:when test="$localName eq 'editor'">
+          <xsl:text>Editor</xsl:text>
+        </xsl:when>
+        <xsl:when test="$localName eq 'funder'">
+          <xsl:text>Funder</xsl:text>
+        </xsl:when>
+        <xsl:when test="$localName eq 'principal'">
+          <xsl:text>Research team head</xsl:text>
+        </xsl:when>
+        <xsl:when test="$localName eq 'sponsor'">
+          <xsl:text>Sponsor</xsl:text>
+        </xsl:when>
+        <!-- TEI elements belonging to model.publicationStmtPart.agency -->
+        <xsl:when test="$localName eq 'distributor'">
+          <xsl:text>Distributor</xsl:text>
+        </xsl:when>
+        <xsl:when test="$localName eq 'publisher' or $localName eq 'authority'">
+          <xsl:text>Publisher</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:message>
+            <xsl:text>internal error: unable to ascertain role of </xsl:text>
+            <xsl:value-of select="$localName"/>
+          </xsl:message>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:call-template name="setRole">
+      <xsl:with-param name="term" select="$relator"/>
+      <xsl:with-param name="authority" select="'marcrelator'"/>
+    </xsl:call-template>
   </xsl:template>
   
   <xsl:template name="setRole">
+    <xsl:param name="roleType"/>
     <xsl:param name="term" required="yes"/>
+    <xsl:param name="termType" select="'text'"/>
     <xsl:param name="authority"/>
-    <xsl:param name="type" select="'text'"/>
     <mods:role>
-      <mods:roleTerm type="{$type}">
+      <xsl:if test="$roleType">
+        <xsl:attribute name="type" select="$roleType"/>
+      </xsl:if>
+      <mods:roleTerm type="{$termType}">
         <xsl:if test="$authority">
           <xsl:attribute name="authority" select="$authority"/>
         </xsl:if>
