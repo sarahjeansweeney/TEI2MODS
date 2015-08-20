@@ -139,7 +139,7 @@
   		<xsl:apply-templates select="//abstract"/>
   		
   		<!-- note -->
-  		<xsl:call-template name="notes"/>
+  		<xsl:apply-templates select="notesStmt/note"/>
   		
   		<!-- subject -->
   		<xsl:call-template name="subjects"/>
@@ -232,9 +232,14 @@
   </xsl:template>
   
   <xsl:template match="text()" mode="contributors">
-    <mods:namePart>
-      <xsl:value-of select="normalize-space()"/>
-    </mods:namePart>
+    <xsl:choose>
+      <xsl:when test="parent::*/*"/>
+      <xsl:otherwise>
+        <mods:namePart>
+          <xsl:value-of select="normalize-space()"/>
+        </mods:namePart>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   
   <xsl:template match="publisher | distributor | authority" mode="contributors">
@@ -785,20 +790,17 @@
     </xsl:if>
   </xsl:template>
 
-  <xsl:template name="notes">
-    <xsl:apply-templates select="//notesStmt/note"/>
-    
+  <xsl:template match="notesStmt/note">
+    <mods:note>
+      <xsl:apply-templates mode="textOnly"/>
+    </mods:note>
+    <!-- xd start -->
     <xsl:if test="fileDesc/publicationStmt/p"> <!-- Is this accurate? ~Ashley -->
       <mods:note>
         <xsl:value-of select="normalize-space(fileDesc/publicationStmt/p)"/>
       </mods:note>
     </xsl:if>
-  </xsl:template>
-  
-  <xsl:template match="notesStmt/note">
-    <mods:note>
-      <xsl:apply-templates mode="textOnly"/>
-    </mods:note>
+    <!-- xd end -->
   </xsl:template>
   
   <xsl:template match="keywords/term">
@@ -811,8 +813,7 @@
       </mods:topic>
     </mods:subject>
   </xsl:template>
-  <!-- Handle <list>s inside <keywords> (deprecated, but may still be around in 
-    older TEI) -->
+  <!-- Handle <list>s inside <keywords> (deprecated, but may still be around in older TEI) -->
   <xsl:template match="keywords/list/item">
     <mods:subject>
       <mods:topic>
