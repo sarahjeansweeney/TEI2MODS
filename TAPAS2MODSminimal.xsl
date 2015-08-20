@@ -4,10 +4,10 @@
   xmlns:mods="http://www.loc.gov/mods/v3"
   xmlns:tei="http://www.tei-c.org/ns/1.0"
   xpath-default-namespace="http://www.tei-c.org/ns/1.0"
-  xmlns:wwpft="http://www.wwp.northeastern.edu/ns/functions"
-  xmlns:tapasft="http://www.tapasproject.org/ns/functions"
+  xmlns:wwpfn="http://www.wwp.northeastern.edu/ns/functions"
+  xmlns:tapasfn="http://www.tapasproject.org/ns/functions"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
-  exclude-result-prefixes="tei xs xsl wwpft tapasft">
+  exclude-result-prefixes="#all">
   <xsl:output indent="yes" method="xml"/>
 
   <!-- TAPAS2MODSminimal: -->
@@ -15,8 +15,6 @@
   <!-- out a MODS record for said file. -->
   <!-- Written by Sarah Sweeney. -->
   <!-- Updated 2015-07 by Syd Bauman and Ashley Clark -->
-  <!-- For now, we are only processing <TEI> root elements, -->
-  <!-- summarily ignoring the possibility of <teiCorpus>. -->
   
   <!-- VARIABLES -->
   
@@ -25,20 +23,23 @@
   <!-- FUNCTIONS -->
   
   <!-- Match the leading articles of work titles, and return their character counts. -->
-  <xsl:function name="wwpft:number-nonfiling">
+  <xsl:function name="wwpfn:number-nonfiling">
     <xsl:param name="title" required="yes"/>
     <xsl:variable name="leadingArticlesRegex" select="'^((a|an|the|der|das|le|la|el) |).+$'"/>
     <xsl:value-of select="string-length(replace($title,$leadingArticlesRegex,'$1','i'))"/>
   </xsl:function>
   
-  <xsl:function name="tapasft:text-only">
+  <xsl:function name="tapasfn:text-only">
     <xsl:param name="element" as="node()"/>
     <xsl:apply-templates select="$element" mode="textOnly"/>
   </xsl:function>
   
   <!-- TEMPLATES -->
   
+  <!-- For now, ignore text nodes by default (why? —sb) -->
   <xsl:template match="text()"/>
+	<!-- Ignore content, as opposed to metadata -->
+	<xsl:template match="text | surface | sourceDoc"/>
   
   <!-- process nodes in text-only mode -->
     <xsl:template match="text()" mode="textOnly">
@@ -53,146 +54,141 @@
     <xsl:apply-templates mode="textOnly"/>
   </xsl:template>
   
-  <xsl:template match="/">
-    <xsl:apply-templates select="TEI | teiCorpus">
-      <xsl:with-param name="is-top-level" select="true()"/>
-    </xsl:apply-templates>
+  <xsl:template match="teiCorpus">
+  	<mods:collection>
+  		<xsl:apply-templates/>
+  	</mods:collection>
   </xsl:template>
+	<xsl:template match="TEI">
+		<xsl:apply-templates select="teiHeader"/>
+	</xsl:template>
   
-  <!--<xsl:template match="teiCorpus">
-    <xsl:param name="is-top-level" as="xs:boolean" select="false()"/>
-    <xsl:choose>
-      <xsl:when test="$is-top-level">
-        <mods:modsCollection>
-          <xsl:apply-templates/>
-        </mods:modsCollection>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:apply-templates/>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>-->
-  
-  <xsl:template match="TEI">
-    <mods:mods>
-      <xsl:apply-templates/>
-      
-      <!-- typeOfResource -->
-      <mods:typeOfResource>
-        <xsl:text>text</xsl:text>
-      </mods:typeOfResource>
-      
-      <!-- genre -->
-      <mods:genre authority="aat">texts (document genres)</mods:genre>
-      
-      <!-- metadata record info -->
-      <mods:recordInfo>
-        <mods:recordContentSource>TEI Archive, Publishing, and Access Service (TAPAS)</mods:recordContentSource>
-        <mods:recordOrigin>MODS record generated from TEI source file teiHeader data.</mods:recordOrigin>
-        <mods:languageOfCataloging>
-          <mods:languageTerm type="text" authority="iso639-2b">English</mods:languageTerm>
-        </mods:languageOfCataloging>
-      </mods:recordInfo>
-      
-      <!-- extension -->
-      <mods:extension displayLabel="TEI">
-        <xsl:copy-of select="."/>
-      </mods:extension>
-    </mods:mods>
-  </xsl:template>
-  
-  <xsl:template match="teiHeader">
-    <!-- Handle titles -->
-    <xsl:variable name="allTitles" select="fileDesc//title" as="item()*"/>
-    <xsl:variable name="distinctTitles" select="distinct-values(  for $i in $allTitles
-                                                                  return tapasft:text-only($i) )"/>
-    <!-- When choosing the main title, prioritize those which have been 
+	<xsl:template match="teiHeader">
+  	<mods:mods>
+  		<!-- Handle titles -->
+  		<xsl:variable name="allTitles" as="item()*"
+  			select="fileDesc/titleStmt/title
+  			      | fileDesc/titleStmt/sourceDesc/bibl/title
+  			      | fileDesc/titleStmt/sourceDesc/biblStruct/*/title
+  			      | fileDesc/titleStmt/sourceDesc/biblFull/titleStmt/title
+  			      | fileDesc/titleStmt/sourceDesc/biblFull/sourceDesc/bibl/title
+  			      | fileDesc/titleStmt/sourceDesc/biblFull/sourceDesc/biblStruct/*/title
+  			      "/>
+  		<xsl:variable name="distinctTitles"
+  			select="distinct-values( for $t in $allTitles return tapasfn:text-only($t) )"/>
+  		<!-- When choosing the main title, prioritize those which have been 
       explicitly encoded for canonical use. -->
-    <xsl:variable name="mainTitle">
-      <xsl:choose>
-        <xsl:when test="$allTitles/@type = 'marc245a'">
-          <xsl:apply-templates select="$allTitles[@type = 'marc245a'][1]" mode="textOnly"/>
-        </xsl:when>
-        <xsl:when test="$allTitles/@type = 'uniform'">
-          <xsl:apply-templates select="$allTitles[@type = 'uniform'][1]" mode="textOnly"/>
-        </xsl:when>
-        <xsl:when test="$allTitles/@type = 'main'">
-          <xsl:apply-templates select="$allTitles[@type = 'main'][1]" mode="textOnly"/>
-        </xsl:when>
-        <xsl:when test="not($allTitles/@type)">
-          <xsl:apply-templates select="$allTitles[not(@type)][1]" mode="textOnly"/>
-        </xsl:when>
-        <xsl:when test="$allTitles/@type = 'desc'">
-          <xsl:apply-templates select="$allTitles[@type = 'desc'][1]" mode="textOnly"/>
-        </xsl:when>
-        <xsl:when test="$allTitles/@type">
-          <xsl:apply-templates select="$allTitles[@type][1]" mode="textOnly"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:apply-templates select="$allTitles[1]" mode="textOnly"/>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    <!-- Construct the entry for the main title. -->
-    <xsl:call-template name="constructTitle">
-      <xsl:with-param name="title" select="$mainTitle"/>
-      <xsl:with-param name="is-main" select="true()"/>
-    </xsl:call-template>
-    <!-- Construct the alternate titles. -->
-    <xsl:for-each select="$distinctTitles[not(. eq $mainTitle)]">
-      <!-- Do not include duplicate main titles. -->
-      <xsl:call-template name="constructTitle">
-        <xsl:with-param name="title" select="."/>
-      </xsl:call-template>
-    </xsl:for-each>
-
-    <!-- name -->
-    <!--<xsl:call-template name="creators"/>-->
-    <xsl:apply-templates select="//fileDesc//author | //fileDesc//editor | //fileDesc//funder | //fileDesc//principal | //fileDesc//sponsor | //fileDesc//respStmt" mode="contributors"/>
-
-    <!-- originInfo -->
-    <xsl:call-template name="originInfo"/>
-
-    <!-- language -->
-    <xsl:apply-templates select="profileDesc/langUsage/language"/>
-
-    <!-- physicalDescription -->
-    <xsl:if test="fileDesc/extent">
-      <mods:physicalDescription>
-        <mods:extent>
-          <xsl:value-of select="fileDesc/extent"/>
-        </mods:extent>
-      </mods:physicalDescription>
-    </xsl:if>
-
-    <!-- abstract -->
-    <xsl:apply-templates select="//abstract"/>
-
-    <!-- note -->
-    <xsl:call-template name="notes"/>
-
-    <!-- subject -->
-    <xsl:call-template name="subjects"/>
-
-    <!-- relatedItem -->
-    <xsl:call-template name="relatedItem"/>
-
-    <!-- accessCondition -->
-      <xsl:choose>
-        <xsl:when test="fileDesc/publicationStmt/availability/license">
-          <xsl:apply-templates select="fileDesc/publicationStmt/availability/license"/>
-        </xsl:when>
-        <xsl:when test="fileDesc/publicationStmt/availability">
-          <mods:accessCondition>
-            <xsl:apply-templates select="fileDesc/publicationStmt/availability" mode="textOnly"/>
-          </mods:accessCondition>
-        </xsl:when>
-        <xsl:otherwise>
-          <mods:accessCondition>
-            <xsl:apply-templates select="fileDesc/publicationStmt" mode="textOnly"/>
-          </mods:accessCondition>
-        </xsl:otherwise>
-      </xsl:choose>
+  		<xsl:variable name="mainTitle">
+  			<xsl:choose>
+  				<xsl:when test="$allTitles/@type = 'marc245a'">
+  					<xsl:apply-templates select="$allTitles[@type = 'marc245a'][1]" mode="textOnly"/>
+  				</xsl:when>
+  				<xsl:when test="$allTitles/@type = 'uniform'">
+  					<xsl:apply-templates select="$allTitles[@type = 'uniform'][1]" mode="textOnly"/>
+  				</xsl:when>
+  				<xsl:when test="$allTitles/@type = 'main'">
+  					<xsl:apply-templates select="$allTitles[@type = 'main'][1]" mode="textOnly"/>
+  				</xsl:when>
+  				<xsl:when test="not($allTitles/@type)">
+  					<xsl:apply-templates select="$allTitles[not(@type)][1]" mode="textOnly"/>
+  				</xsl:when>
+  				<xsl:when test="$allTitles/@type = 'desc'">
+  					<xsl:apply-templates select="$allTitles[@type = 'desc'][1]" mode="textOnly"/>
+  				</xsl:when>
+  				<xsl:when test="$allTitles/@type">
+  					<xsl:apply-templates select="$allTitles[@type][1]" mode="textOnly"/>
+  				</xsl:when>
+  				<xsl:otherwise>
+  					<xsl:apply-templates select="$allTitles[1]" mode="textOnly"/>
+  				</xsl:otherwise>
+  			</xsl:choose>
+  		</xsl:variable>
+  		<!-- Construct the entry for the main title. -->
+  		<xsl:call-template name="constructTitle">
+  			<xsl:with-param name="inputTitle" select="$mainTitle"/>
+  			<xsl:with-param name="is-main" select="true()"/>
+  		</xsl:call-template>
+  		<!-- Construct the alternate titles. -->
+  		<xsl:for-each select="$distinctTitles[not(. eq $mainTitle)]">
+  			<!-- Do not include duplicate main titles. -->
+  			<xsl:call-template name="constructTitle">
+  				<xsl:with-param name="inputTitle" select="."/>
+  			</xsl:call-template>
+  		</xsl:for-each>
+  		
+  		<!-- name -->
+  		<!--<xsl:call-template name="creators"/>-->
+  		<xsl:apply-templates select="//fileDesc//author | //fileDesc//editor | //fileDesc//funder | //fileDesc//principal | //fileDesc//sponsor | //fileDesc//respStmt" mode="contributors"/>
+  		
+  		<!-- originInfo -->
+  		<xsl:call-template name="originInfo"/>
+  		
+  		<!-- language -->
+  		<xsl:apply-templates select="profileDesc/langUsage/language"/>
+  		
+  		<!-- physicalDescription -->
+  		<xsl:if test="fileDesc/extent">
+  			<mods:physicalDescription>
+  				<mods:extent>
+  					<xsl:value-of select="fileDesc/extent"/>
+  				</mods:extent>
+  			</mods:physicalDescription>
+  		</xsl:if>
+  		
+  		<!-- abstract -->
+  		<xsl:apply-templates select="//abstract"/>
+  		
+  		<!-- note -->
+  		<xsl:call-template name="notes"/>
+  		
+  		<!-- subject -->
+  		<xsl:call-template name="subjects"/>
+  		
+  		<!-- relatedItem -->
+  		<xsl:call-template name="relatedItem"/>
+  		
+  		<!-- accessCondition -->
+  		<xsl:choose>
+  			<xsl:when test="fileDesc/publicationStmt/availability/license">
+  				<xsl:apply-templates select="fileDesc/publicationStmt/availability/license"/>
+  			</xsl:when>
+  			<xsl:when test="fileDesc/publicationStmt/availability">
+  				<mods:accessCondition>
+  					<xsl:apply-templates select="fileDesc/publicationStmt/availability" mode="textOnly"/>
+  				</mods:accessCondition>
+  			</xsl:when>
+  			<xsl:otherwise>
+  				<mods:accessCondition>
+  					<xsl:apply-templates select="fileDesc/publicationStmt" mode="textOnly"/>
+  				</mods:accessCondition>
+  			</xsl:otherwise>
+  		</xsl:choose>
+  		
+  		<!-- typeOfResource -->
+  		<mods:typeOfResource>
+  			<xsl:if test="parent::teiCorpus">
+  				<xsl:attribute name="collection" select="'yes'"/>
+  			</xsl:if>
+  			<xsl:text>text</xsl:text>
+  		</mods:typeOfResource>
+  		
+  		<!-- genre -->
+  		<mods:genre authority="aat">texts (document genres)</mods:genre>
+  		
+  		<!-- metadata record info -->
+  		<mods:recordInfo>
+  			<mods:recordContentSource>TEI Archive, Publishing, and Access Service (TAPAS)</mods:recordContentSource>
+  			<mods:recordOrigin>MODS record generated from TEI source file teiHeader data.</mods:recordOrigin>
+  			<mods:languageOfCataloging>
+  				<mods:languageTerm type="text" authority="iso639-2b">English</mods:languageTerm>
+  			</mods:languageOfCataloging>
+  		</mods:recordInfo>
+  		
+  		<!-- extension -->
+  		<mods:extension displayLabel="TEI">
+  			<xsl:copy-of select="."/>
+  		</mods:extension>
+  	</mods:mods>
   </xsl:template>
   
   <!-- ABSTRACTS -->
@@ -222,7 +218,7 @@
       <xsl:for-each select="resp">
         <xsl:call-template name="setRole">
           <xsl:with-param name="term">
-            <xsl:value-of select="tapasft:text-only(.)"/>
+            <xsl:value-of select="tapasfn:text-only(.)"/>
           </xsl:with-param>
         </xsl:call-template>
       </xsl:for-each>
@@ -1013,9 +1009,10 @@
   
   <!-- Given a title, contruct its <titleInfo>, including (limited) non-filing handling. -->
   <xsl:template name="constructTitle">
-    <xsl:param name="title" as="xs:string" required="yes"/>
+    <xsl:param name="inputTitle" as="xs:string" required="yes"/>
     <xsl:param name="is-main" as="xs:boolean" select="false()"/>
-    <xsl:variable name="numNonfiling" select="wwpft:number-nonfiling($title)"/>
+  	<xsl:variable name="title" select="normalize-space($inputTitle)"/>
+  	<xsl:variable name="numNonfiling" select="wwpfn:number-nonfiling($title)"/>
     <mods:titleInfo>
       <xsl:if test="not($is-main)">
         <xsl:attribute name="type" select="'alternative'"/>
