@@ -16,10 +16,6 @@
   <!-- Written by Sarah Sweeney. -->
   <!-- Updated 2015-07 by Syd Bauman and Ashley Clark -->
   
-  <!-- VARIABLES -->
-  
-  <xsl:variable name="marcrelators" select="document('file:///tei-marc-relators.xml')"/>
-  
   <!-- FUNCTIONS -->
   
   <!-- Match the leading articles of work titles, and return their character counts. -->
