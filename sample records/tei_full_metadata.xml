@@ -9,7 +9,7 @@
         <editor xml:id="EF">Ed Folsom</editor>
         <respStmt>
           <resp>Transcription and encoding</resp>
-          <name xml:id="WWAstaff">the Walt Whitman Archive staff</name>
+          <orgName xml:id="WWAstaff">the Walt Whitman Archive staff</orgName>
           <name xml:id="AJ">Andrew Jewell</name>
           <name xml:id="BB">Brett Barney</name>
           <name xml:id="ZB">Zach Bajaber</name>
