@@ -41,7 +41,7 @@
   <!-- TEMPLATES -->
   
   <!-- For now, ignore text nodes by default (why? —sb) -->
-  <xsl:template match="text()"/>
+  <xsl:template match="text()" mode="#default origin"/>
   <!-- Ignore content, as opposed to metadata -->
   <xsl:template match="text | surface | sourceDoc"/>
   
@@ -65,10 +65,19 @@
   </xsl:template>
   
   <xsl:template match="TEI">
+    <xsl:variable name="digitalEdition">
+      <xsl:apply-templates select="//fileDesc/editionStmt" mode="edition"/>
+    </xsl:variable>
+    
     <mods:mods>
-      <xsl:apply-templates select="teiHeader"/>
-      <!-- typeOfResource -->
+      <xsl:apply-templates select="teiHeader">
+        <xsl:with-param name="digitalEdition" tunnel="yes" select="$digitalEdition"/>
+      </xsl:apply-templates>
       
+      <!-- abstract -->
+      <xsl:apply-templates select="//text//div[@type='abstract']"/>
+      
+      <!-- typeOfResource -->
       <mods:typeOfResource>
         <xsl:if test="parent::teiCorpus">
           <xsl:attribute name="collection" select="'yes'"/>
@@ -95,78 +104,29 @@
   </xsl:template>
   
   <xsl:template match="teiHeader">
-      <!-- Handle titles -->
-      <xsl:variable name="allTitles" as="item()*"
-        select="fileDesc/titleStmt/title
-              | fileDesc/titleStmt/sourceDesc/bibl/title
-              | fileDesc/titleStmt/sourceDesc/biblStruct/*/title
-              | fileDesc/titleStmt/sourceDesc/biblFull/titleStmt/title
-              | fileDesc/titleStmt/sourceDesc/biblFull/sourceDesc/bibl/title
-              | fileDesc/titleStmt/sourceDesc/biblFull/sourceDesc/biblStruct/*/title
-              "/>
-      <xsl:variable name="distinctTitles"
-        select="distinct-values( for $t in $allTitles return tapasfn:text-only($t) )"/>
-      <!-- When choosing the main title, prioritize those which have been 
-      explicitly encoded for canonical use. -->
-      <xsl:variable name="mainTitle">
-        <xsl:choose>
-          <xsl:when test="$allTitles/@type = 'marc245a'">
-            <xsl:apply-templates select="$allTitles[@type = 'marc245a'][1]" mode="textOnly"/>
-          </xsl:when>
-          <xsl:when test="$allTitles/@type = 'uniform'">
-            <xsl:apply-templates select="$allTitles[@type = 'uniform'][1]" mode="textOnly"/>
-          </xsl:when>
-          <xsl:when test="$allTitles/@type = 'main'">
-            <xsl:apply-templates select="$allTitles[@type = 'main'][1]" mode="textOnly"/>
-          </xsl:when>
-          <xsl:when test="not($allTitles/@type)">
-            <xsl:apply-templates select="$allTitles[not(@type)][1]" mode="textOnly"/>
-          </xsl:when>
-          <xsl:when test="$allTitles/@type = 'desc'">
-            <xsl:apply-templates select="$allTitles[@type = 'desc'][1]" mode="textOnly"/>
-          </xsl:when>
-          <xsl:when test="$allTitles/@type">
-            <xsl:apply-templates select="$allTitles[@type][1]" mode="textOnly"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:apply-templates select="$allTitles[1]" mode="textOnly"/>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:variable>
-      <!-- Construct the entry for the main title. -->
-      <xsl:call-template name="constructTitle">
-        <xsl:with-param name="inputTitle" select="$mainTitle"/>
-        <xsl:with-param name="is-main" select="true()"/>
-      </xsl:call-template>
-      <!-- Construct the alternate titles. -->
-      <xsl:for-each select="$distinctTitles[not(. eq $mainTitle)]">
-        <!-- Do not include duplicate main titles. -->
-        <xsl:call-template name="constructTitle">
-          <xsl:with-param name="inputTitle" select="."/>
-        </xsl:call-template>
-      </xsl:for-each>
+      <xsl:call-template name="setAllTitles"/>
       
       <!-- name -->
-      <xsl:apply-templates select="//fileDesc//author | //fileDesc//editor | //fileDesc//funder | //fileDesc//principal | //fileDesc//sponsor | //fileDesc//respStmt" mode="contributors"/>
+      <xsl:apply-templates select="//fileDesc//author | //fileDesc//editor 
+        | //fileDesc//funder | //fileDesc//principal | //fileDesc//sponsor | //fileDesc//respStmt" 
+        mode="contributors"/>
       
       <!-- originInfo -->
-      <xsl:call-template name="originInfo"/>
-      
-      <!-- physicalDescription -->
-      <xsl:if test="fileDesc/extent">
-        <mods:physicalDescription>
-          <mods:extent>
-            <xsl:value-of select="fileDesc/extent"/>
-          </mods:extent>
-        </mods:physicalDescription>
-      </xsl:if>
-      
-      <!-- abstract -->
-      <xsl:apply-templates/>
+      <xsl:apply-templates select="//publicationStmt" mode="origin"/>
       
       <!-- relatedItem -->
       <xsl:call-template name="relatedItem"/>
-
+      
+      <!-- Handle the rest of the metadata in a fall-through way. -->
+      <xsl:apply-templates/>
+  </xsl:template>
+  
+  <xsl:template match="fileDesc/extent">
+    <mods:physicalDescription>
+      <mods:extent>
+        <xsl:apply-templates mode="textOnly"/>
+      </mods:extent>
+    </mods:physicalDescription>
   </xsl:template>
   
   <!-- ABSTRACTS -->
@@ -177,12 +137,12 @@
   </xsl:template>
   
   <xsl:template match="fileDesc/publicationStmt">
-    <xsl:apply-templates/>
+    <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
   <xsl:template match="publicationStmt/availability">
     <xsl:choose>
-      <xsl:when test="./license">
+      <xsl:when test="license">
         <xsl:apply-templates select="license"/>
       </xsl:when>
       <xsl:otherwise>
@@ -193,8 +153,7 @@
     </xsl:choose>
   </xsl:template>
   
-  <!-- CREATORS -->
-  
+  <!-- CONTRIBUTORS -->
   <xsl:template match="author | editor | funder | principal | sponsor | publisher | distributor | authority" mode="contributors">
     <xsl:if test="not(matches(., 'unknown', 'i'))">
       <mods:name>
@@ -222,17 +181,6 @@
     </xsl:for-each>
   </xsl:template>
   
-  <xsl:template match="text()" mode="contributors">
-    <xsl:choose>
-      <xsl:when test="parent::*/*"/>
-      <xsl:otherwise>
-        <mods:namePart>
-          <xsl:value-of select="normalize-space()"/>
-        </mods:namePart>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
-  
   <xsl:template match="orgName" mode="contributors">
     <xsl:attribute name="type" select="'corporate'"/>
     <mods:namePart>
@@ -241,7 +189,6 @@
   </xsl:template>
   
   <xsl:template match="persName" mode="contributors">
-    <!--<xsl:attribute name="type" select="'personal'"/>-->
     <xsl:call-template name="personalNamePart"/>
   </xsl:template>
   
@@ -264,112 +211,118 @@
       <xsl:apply-templates mode="textOnly"/>
     </mods:namePart>
   </xsl:template>
+  
+  <xsl:template match="text()" mode="contributors">
+    <xsl:choose>
+      <xsl:when test="parent::*/*"/>
+      <xsl:otherwise>
+        <mods:namePart>
+          <xsl:value-of select="normalize-space()"/>
+        </mods:namePart>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
 
   <!-- PUBLICATION STATEMENT -->
-
-  <xsl:template name="originInfo">
-
-    <xsl:if
-      test="fileDesc/publicationStmt/pubPlace or fileDesc/publicationStmt/publisher or fileDesc/publicationStmt/distributor or fileDesc/publicationStmt/authority or fileDesc/publicationStmt/date">
-
+  
+  <xsl:template match="publicationStmt" mode="origin">
+    <xsl:param name="digitalEdition" as="node()" tunnel="yes"/>
+    <xsl:if test="pubPlace or publisher or distributor or authority or date">
       <mods:originInfo>
-        <xsl:if test="fileDesc/publicationStmt/pubPlace">
-          <mods:place>
-            <mods:placeTerm>
-              <xsl:value-of
-                select="normalize-space(fileDesc/publicationStmt/pubPlace)"/>
-            </mods:placeTerm>
-          </mods:place>
+        <xsl:if test="not(empty($digitalEdition))">
+          <xsl:copy-of select="$digitalEdition"/>
         </xsl:if>
-
-        <xsl:for-each select="fileDesc/publicationStmt">
-          <xsl:if test="publisher">
-            <mods:publisher>
-              <xsl:value-of select="normalize-space(publisher)"/>
-            </mods:publisher>
-          </xsl:if>
-          <xsl:if test="distributor">
-            <mods:publisher>
-              <xsl:value-of select="normalize-space(distributor)"/>
-            </mods:publisher>
-          </xsl:if>
-          <xsl:if test="authority">
-            <mods:publisher>
-              <xsl:value-of select="normalize-space(authority)"/>
-            </mods:publisher>
-          </xsl:if>
-        </xsl:for-each>
-
-        <xsl:if test="fileDesc/publicationStmt/date">
-          <xsl:for-each select="fileDesc/publicationStmt">
-            <xsl:choose>
-              <xsl:when test="date[@when]">
-                <mods:dateCreated keyDate="yes">
-                  <xsl:value-of select="date/@when"/>
-                </mods:dateCreated>
-              </xsl:when>
-              
-              <xsl:when test="date[@notBefore] or date[@notAfter]">
-                <xsl:if test="date[@notBefore]">
-                  <mods:dateCreated point="start" qualifier="approximate" keyDate="yes">
-                    <xsl:value-of select="date/@notBefore"/>
-                  </mods:dateCreated>
-                </xsl:if>
-
-                <xsl:if test="date[@notAfter]">
-                  <mods:dateCreated point="end" qualifier="approximate">
-                    <xsl:value-of select="date/@notAfter"/>
-                  </mods:dateCreated>
-                </xsl:if>
-              </xsl:when>
-            </xsl:choose>
-          </xsl:for-each>
-        </xsl:if>
-
-
-        <!-- EDITION -->
-
-        <xsl:if test="fileDesc/editionStmt/edition">
-          <mods:edition>
-            <xsl:choose>
-              <xsl:when test="fileDesc/editionStmt/edition[@n]">
-                <xsl:value-of select="fileDesc/editionStmt/edition/@n"/>
-                <xsl:if test="fileDesc/editionStmt/respStmt">
-                  <xsl:text>; </xsl:text>
-                  <xsl:value-of
-                    select="fileDesc/editionStmt/respStmt/resp"/>
-                  <xsl:text> </xsl:text>
-                </xsl:if>
-                <xsl:if test="fileDesc/editionStmt/respStmt/name">
-                  <xsl:value-of
-                    select="fileDesc/editionStmt/respStmt/name"/>
-                </xsl:if>
-              </xsl:when>
-              <xsl:when test="fileDesc/editionStmt/edition/p">
-                <xsl:value-of select="fileDesc/editionStmt/edition/p"/>
-              </xsl:when>
-              <xsl:otherwise>
-                <xsl:value-of select="fileDesc/editionStmt/edition"/>
-                <xsl:if test="fileDesc/editionStmt/respStmt">
-                  <xsl:text>; </xsl:text>
-                  <xsl:value-of
-                    select="fileDesc/editionStmt/respStmt/resp"/>
-                  <xsl:text> </xsl:text>
-                </xsl:if>
-                <xsl:if test="fileDesc/editionStmt/respStmt/name">
-                  <xsl:value-of
-                    select="fileDesc/editionStmt/respStmt/name"/>
-                </xsl:if>
-              </xsl:otherwise>
-            </xsl:choose>
-          </mods:edition>
-        </xsl:if>
+        <xsl:apply-templates mode="origin"/>
       </mods:originInfo>
     </xsl:if>
   </xsl:template>
+  
+  <xsl:template match="publicationStmt/pubPlace" mode="origin">
+    <mods:place>
+      <mods:placeTerm>
+        <xsl:value-of select="tapasfn:text-only(.)"/>
+      </mods:placeTerm>
+    </mods:place>
+  </xsl:template>
+  
+  <xsl:template match="publicationStmt/publisher | publicationStmt/distributor | publicationStmt/authority" mode="origin">
+    <mods:publisher>
+      <xsl:value-of select="tapasfn:text-only(.)"/>
+    </mods:publisher>
+  </xsl:template>
+  
+  <xsl:template match="publicationStmt/date" mode="origin">
+    <xsl:choose>
+      <xsl:when test="@when">
+        <mods:dateIssued keyDate="yes">
+          <xsl:value-of select="@when"/>
+        </mods:dateIssued>
+      </xsl:when>
+      <xsl:when test="@notBefore or @notAfter">
+        <xsl:if test="@notBefore">
+          <mods:dateIssued point="start" qualifier="approximate" keyDate="yes">
+            <xsl:value-of select="date/@notBefore"/>
+          </mods:dateIssued>
+        </xsl:if>
+        <xsl:if test="@notAfter">
+          <mods:dateIssued point="end" qualifier="approximate">
+            <xsl:value-of select="date/@notAfter"/>
+          </mods:dateIssued>
+        </xsl:if>
+      </xsl:when>
+    </xsl:choose>
+  </xsl:template>
 
+  <!-- EDITION -->
+  <xsl:template match="fileDesc/editionStmt" mode="edition">
+    <mods:edition>
+      <xsl:apply-templates mode="edition"/>
+    </mods:edition>
+  </xsl:template>
+  
+  <xsl:template match="edition" mode="edition">
+    <xsl:choose>
+      <xsl:when test="@n">
+        <xsl:value-of select="@n"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:apply-templates mode="textOnly"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+  
+  <!-- LICENSING -->
+  <xsl:template match="license">
+    <mods:accessCondition displayLabel="Licensing information:">
+      <xsl:if test="@target | @when
+        | @notBefore | @notAfter
+        | @from | @to">
+        <conditions>
+          <xsl:if test="@target">
+            <url><xsl:value-of select="@target"/></url>
+          </xsl:if>
+          <xsl:if test="@when">
+            <date><xsl:value-of select="@when"/></date>
+          </xsl:if>
+          <xsl:if test="@notBefore">
+            <date>not before <xsl:value-of select="@notBefore"/></date>
+          </xsl:if>
+          <xsl:if test="@notAfter">
+            <date>not after <xsl:value-of select="@notBefore"/></date>
+          </xsl:if>
+          <xsl:if test="@from|@to">
+            <date><xsl:value-of select="@from"/>&#x2013;<xsl:value-of select="@to"/></date>
+          </xsl:if>
+        </conditions>
+        <xsl:if test="normalize-space(.) != ''">
+          <xsl:text> </xsl:text>
+        </xsl:if>
+      </xsl:if>
+      <xsl:apply-templates mode="textOnly"/>
+    </mods:accessCondition>
+  </xsl:template>
+  
   <!-- LANGUAGE -->
-
   <xsl:template match="language">
     <mods:language>
       <mods:languageTerm type="code" authority="rfc5646">
@@ -384,81 +337,24 @@
   </xsl:template>
 
   <!-- NOTES -->
-
-  <xsl:template name="encodingResp">
-    <xsl:for-each select="resp">
-      <xsl:choose>
-        <xsl:when test="matches(., 'by','i')">
-          <xsl:choose>
-            <xsl:when test="matches(., 'by','i')">
-              <xsl:value-of select="."/>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:value-of select="."/>
-              <xsl:text> </xsl:text>
-            </xsl:otherwise>
-          </xsl:choose>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="."/>
-          <xsl:text>: </xsl:text>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:for-each>
-  </xsl:template>
-
-  <xsl:template name="encoders">
-    <xsl:if test="name">
-      <xsl:for-each select="name">
-        <xsl:call-template name="encodersName"/>
-      </xsl:for-each>
-      <xsl:if test="last()">
-        <xsl:text>. </xsl:text>
-      </xsl:if>
-    </xsl:if>
-
-    <xsl:if test="persName">
-      <xsl:for-each select="persName">
-        <xsl:call-template name="encodersName"/>
-      </xsl:for-each>
-      <xsl:if test="last()">
-        <xsl:text>. </xsl:text>
-      </xsl:if>
-    </xsl:if>
-
-    <xsl:if test="orgName">
-      <xsl:for-each select="orgName">
-        <xsl:call-template name="encodersName"/>
-      </xsl:for-each>
-      <xsl:if test="last()">
-        <xsl:text>. </xsl:text>
-      </xsl:if>
-    </xsl:if>
-  </xsl:template>
-
-  <xsl:template name="encodersName">
-    <xsl:value-of select="."/>
-    <xsl:if test="position() != last()">
-      <xsl:text>; </xsl:text>
-    </xsl:if>
-  </xsl:template>
-
   <xsl:template match="notesStmt/note">
     <mods:note>
       <xsl:apply-templates mode="textOnly"/>
     </mods:note>
-    <!-- xd start -->
-    <xsl:if test="fileDesc/publicationStmt/p"> <!-- Is this accurate? ~Ashley -->
-      <mods:note>
-        <xsl:value-of select="normalize-space(fileDesc/publicationStmt/p)"/>
-      </mods:note>
-    </xsl:if>
-    <!-- xd end -->
   </xsl:template>
-  <!--
-  <xsl:template match="keywords">
-    <xsl:apply-templates/>
-  </xsl:template>-->
+  
+  <xsl:template match="fileDesc/publicationStmt[p]">
+    <mods:note>
+      <xsl:for-each select="p">
+        <xsl:text> </xsl:text>
+        <xsl:apply-templates mode="textOnly"/>
+        <xsl:text> </xsl:text>
+      </xsl:for-each>
+    </mods:note>
+  </xsl:template>
+  
+  
+  <!-- SUBJECTS -->
   
   <xsl:template match="term">
     <mods:subject>
@@ -500,8 +396,83 @@
   <!-- *** subroutines *** -->
   <!-- ******************* -->
   
-  <!-- NAMES AND CONTRIBUTORS -->
+  <!-- TITLES -->
+  <xsl:template name="setAllTitles">
+    <!-- Handle titles -->
+    <xsl:variable name="allTitles" as="item()*"
+      select="fileDesc/titleStmt/title
+      | fileDesc/titleStmt/sourceDesc/bibl/title
+      | fileDesc/titleStmt/sourceDesc/biblStruct/*/title
+      | fileDesc/titleStmt/sourceDesc/biblFull/titleStmt/title
+      | fileDesc/titleStmt/sourceDesc/biblFull/sourceDesc/bibl/title
+      | fileDesc/titleStmt/sourceDesc/biblFull/sourceDesc/biblStruct/*/title
+      "/>
+    <xsl:variable name="distinctTitles"
+      select="distinct-values( for $t in $allTitles return tapasfn:text-only($t) )"/>
+    <!-- When choosing the main title, prioritize those which have been 
+      explicitly encoded for canonical use. -->
+    <xsl:variable name="mainTitle">
+      <xsl:choose>
+        <xsl:when test="$allTitles/@type = 'marc245a'">
+          <xsl:apply-templates select="$allTitles[@type = 'marc245a'][1]" mode="textOnly"/>
+        </xsl:when>
+        <xsl:when test="$allTitles/@type = 'uniform'">
+          <xsl:apply-templates select="$allTitles[@type = 'uniform'][1]" mode="textOnly"/>
+        </xsl:when>
+        <xsl:when test="$allTitles/@type = 'main'">
+          <xsl:apply-templates select="$allTitles[@type = 'main'][1]" mode="textOnly"/>
+        </xsl:when>
+        <xsl:when test="not($allTitles/@type)">
+          <xsl:apply-templates select="$allTitles[not(@type)][1]" mode="textOnly"/>
+        </xsl:when>
+        <xsl:when test="$allTitles/@type = 'desc'">
+          <xsl:apply-templates select="$allTitles[@type = 'desc'][1]" mode="textOnly"/>
+        </xsl:when>
+        <xsl:when test="$allTitles/@type">
+          <xsl:apply-templates select="$allTitles[@type][1]" mode="textOnly"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:apply-templates select="$allTitles[1]" mode="textOnly"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <!-- Construct the entry for the main title. -->
+    <xsl:call-template name="constructTitle">
+      <xsl:with-param name="inputTitle" select="$mainTitle"/>
+      <xsl:with-param name="is-main" select="true()"/>
+    </xsl:call-template>
+    <!-- Construct the alternate titles. -->
+    <xsl:for-each select="$distinctTitles[not(. eq $mainTitle)]">
+      <!-- Do not include duplicate main titles. -->
+      <xsl:call-template name="constructTitle">
+        <xsl:with-param name="inputTitle" select="."/>
+      </xsl:call-template>
+    </xsl:for-each>
+  </xsl:template>
   
+  <!-- Given a title, contruct its <titleInfo>, including (limited) non-filing handling. -->
+  <xsl:template name="constructTitle">
+    <xsl:param name="inputTitle" as="xs:string" required="yes"/>
+    <xsl:param name="is-main" as="xs:boolean" select="false()"/>
+    <xsl:variable name="title" select="normalize-space($inputTitle)"/>
+    <xsl:variable name="numNonfiling" select="wwpfn:number-nonfiling($title)"/>
+    <mods:titleInfo>
+      <xsl:if test="not($is-main)">
+        <xsl:attribute name="type" select="'alternative'"/>
+      </xsl:if>
+      <xsl:if test="$numNonfiling > 0">
+        <mods:nonSort>
+          <xsl:value-of select="substring($title,1,$numNonfiling - 1)"/>
+        </mods:nonSort>
+      </xsl:if>
+      <mods:title>
+        <xsl:value-of select="if ($numNonfiling = 0) then $title
+          else substring($title,$numNonfiling+1)"/>
+      </mods:title>
+    </mods:titleInfo>
+  </xsl:template>
+  
+  <!-- NAMES AND CONTRIBUTORS -->
   <xsl:template name="contribName">
     <xsl:param name="type" select="'personal'"/>
     <mods:name type="$type">
@@ -730,7 +701,7 @@
     </mods:role>
   </xsl:template>
   
-  <!-- RELATED ITEM -->
+  <!-- RELATED ITEM --> <!-- xd -->
   <xsl:template name="relatedItem">
     <!-- SERIES -->
     <xsl:if test="fileDesc/titleStmt/title[@level = 's']">
@@ -863,61 +834,6 @@
         </mods:originInfo>
       </xsl:for-each>
     </xsl:if>
-
-  </xsl:template>
-  
-  <!-- LICENSING -->
-
-  <xsl:template match="license">
-    <mods:accessCondition displayLabel="Licensing information:">
-      <xsl:if test="@target | @when
-        | @notBefore | @notAfter
-        | @from | @to">
-        <conditions>
-          <xsl:if test="@target">
-            <url><xsl:value-of select="@target"/></url>
-          </xsl:if>
-          <xsl:if test="@when">
-            <date><xsl:value-of select="@when"/></date>
-          </xsl:if>
-          <xsl:if test="@notBefore">
-            <date>not before <xsl:value-of select="@notBefore"/></date>
-          </xsl:if>
-          <xsl:if test="@notAfter">
-            <date>not after <xsl:value-of select="@notBefore"/></date>
-          </xsl:if>
-          <xsl:if test="@from|@to">
-            <date><xsl:value-of select="@from"/>&#x2013;<xsl:value-of select="@to"/></date>
-          </xsl:if>
-        </conditions>
-        <xsl:if test="normalize-space(.) != ''">
-          <xsl:text> </xsl:text>
-        </xsl:if>
-      </xsl:if>
-      <xsl:apply-templates mode="textOnly"/>
-    </mods:accessCondition>
-  </xsl:template>
-  
-  <!-- Given a title, contruct its <titleInfo>, including (limited) non-filing handling. -->
-  <xsl:template name="constructTitle">
-    <xsl:param name="inputTitle" as="xs:string" required="yes"/>
-    <xsl:param name="is-main" as="xs:boolean" select="false()"/>
-    <xsl:variable name="title" select="normalize-space($inputTitle)"/>
-    <xsl:variable name="numNonfiling" select="wwpfn:number-nonfiling($title)"/>
-    <mods:titleInfo>
-      <xsl:if test="not($is-main)">
-        <xsl:attribute name="type" select="'alternative'"/>
-      </xsl:if>
-      <xsl:if test="$numNonfiling > 0">
-        <mods:nonSort>
-          <xsl:value-of select="substring($title,1,$numNonfiling - 1)"/>
-        </mods:nonSort>
-      </xsl:if>
-      <mods:title>
-        <xsl:value-of select="if ($numNonfiling = 0) then $title
-                              else substring($title,$numNonfiling+1)"/>
-      </mods:title>
-    </mods:titleInfo>
   </xsl:template>
   
   <!-- Make a copy of the entire TEI document. -->
