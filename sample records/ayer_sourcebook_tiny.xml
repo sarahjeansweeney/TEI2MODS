@@ -1,0 +1,139 @@
+﻿<TEI xmlns="http://www.tei-c.org/ns/1.0" xml:lang="en">
+  <teiHeader>
+    <fileDesc>
+      <titleStmt>
+        <title>A Source Book for Ancient Church History</title>
+        <author>
+          <name type="person">Joseph Cullen Ayer, Jr., Ph.D.</name>
+          <persName>
+            <roleName type="nobility">Princess</roleName>
+            <forename sort="1">Diana</forename>
+            <surname><surname sort="2">Prince</surname>, <surname type="matronym">daughter of Hippolyta</surname></surname>
+            <addName type="professional">Wonder Woman</addName>
+            <affiliation>Justice League of America</affiliation>
+          </persName>
+          <name>
+            <roleName type="honorific" full="abb">Mme</roleName>
+            <nameLink>de la</nameLink>
+            <surname>Rochefoucault</surname>
+          </name>
+        </author>
+      </titleStmt>
+      <editionStmt>
+        <edition n="1">Edition 1</edition>
+      </editionStmt>
+      <publicationStmt>
+        <publisher>Project Gutenberg</publisher>
+        <date>April 2, 2008</date>
+        <idno type="etext-no">24979</idno>
+        <availability>
+          <p>This eBook is for the use of anyone anywhere at no cost and with
+            almost no restrictions whatsoever. You may copy it, give it away or
+            re-use it under the terms of the Project Gutenberg License online at
+            www.gutenberg.org/license</p>
+        </availability>
+      </publicationStmt>
+      <sourceDesc>
+        <bibl>
+          <title type="custom">A Custom Title</title>
+          <title type="marc245a">The Main Title</title>
+          <title type="duplicate">A Custom Title</title>
+          <title>A title with no type</title>
+        </bibl>
+        <bibl> Created electronically. </bibl>
+      </sourceDesc>
+    </fileDesc>
+    <encodingDesc><p> </p></encodingDesc>
+    <profileDesc>
+      <abstract>
+        <p>This is an abstract. It is generally a summary of the text.
+          Not here, though!</p>
+      </abstract>
+      <textClass>
+        <keywords>
+          <term>lions</term>
+          <term>tigers</term>
+          <term>bears</term>
+        </keywords>
+      </textClass>
+      <langUsage>
+        <language ident="en"/>
+        <language ident="el"/>
+        <language ident="la"/>
+      </langUsage>
+    </profileDesc>
+    <revisionDesc>
+      <change>
+        <date when="2008-04-02">April 2, 2008</date>
+        <p> Produced by Greg Weeks, La Monte H.P. Yarrol, David King, and
+            the Online Distributed Proofreading Team at
+            &lt;http://www.pgdp.net/&gt;. Page-images available at
+            &lt;http://www.pgdp.net/projects/projectID4484cbcb67673/&gt; 
+        </p>
+        <p>Project Gutenberg TEI edition 1</p>
+      </change>
+    </revisionDesc>
+  </teiHeader>
+  <text xml:lang="en">
+    <front>
+      <div>
+        <divGen type="pgheader"/>
+      </div>
+      <div>
+        <divGen type="encodingDesc"/>
+      </div>
+      
+      
+
+      <div rend="page-break-before: always">
+        <p rend="font-size: xx-large; text-align: center; bold">A Source Book
+          for Ancient Church History</p>
+        <p rend="font-size: x-large; text-align: center; bold">From the
+          Apostolic Age to the Close of the Conciliar Period</p>
+        <p rend="font-size: xx-large; text-align: center; bold">by Joseph Cullen
+          Ayer, Jr., Ph.D.</p>
+        <p rend="font-size: large; text-align: center">Professor of
+          Ecclesiastical History in the Divinity School of the Protestant
+          Episcopal Church in Philadelphia</p>
+        <p rend="font-size: large; text-align: center">New York</p>
+        <p rend="font-size: large; text-align: center">Charles Scribner's
+          Sons</p>
+        <p rend="text-align: center">1913</p>
+      </div>
+      <div rend="page-break-before: always">
+        <head>Contents</head>
+        <divGen type="toc"/>
+      </div>
+    </front>
+
+    <body>
+
+      <pb n="v"/>
+      <anchor xml:id="Pgv"/>
+
+      <div rend="page-break-before: always">
+        <index indexName="toc"/>
+        <index indexName="pdf"/>
+        <head>Errata.</head>
+
+        <p> [Transcriber's Note: These corrections have already been applied to
+          the text in this e-book.] </p>
+
+        <p> Page 55, line 26. Lucian, of Samosata, does, etc.: omit commas. </p>
+
+      </div>
+
+    </body>
+    <back rend="page-break-before: right">
+      <div xml:id="footnotes">
+        <index indexName="toc"/>
+        <index indexName="pdf"/>
+        <head>Footnotes</head>
+        <divGen type="footnotes"/>
+      </div>
+      <div rend="page-break-before: right">
+        <divGen type="pgfooter"/>
+      </div>
+    </back>
+  </text>
+</TEI>

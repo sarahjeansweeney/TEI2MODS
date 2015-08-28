@@ -158,22 +158,27 @@
   <xsl:template
     match="author | editor | funder | principal | sponsor | publisher | distributor | authority"
     mode="contributors related">
-    <mods:name>
       <xsl:choose>
         <xsl:when test="every $x in node() satisfies $x instance of text()">
-          <mods:namePart>
-            <xsl:value-of select="normalize-space()"/>
-          </mods:namePart>
+          <mods:name>
+            <mods:namePart>
+              <xsl:value-of select="normalize-space()"/>
+            </mods:namePart>
+          </mods:name>
         </xsl:when>
         <xsl:when test="matches(., 'unknown', 'i')">
-          <mods:namePart>Unknown</mods:namePart>
+          <mods:name>
+            <mods:namePart>Unknown</mods:namePart>
+          </mods:name>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:apply-templates mode="contributors"/>
+          <xsl:apply-templates mode="name">
+            <xsl:with-param name="modsRole" tunnel="yes">
+              <xsl:call-template name="nameRole"/>
+            </xsl:with-param>
+          </xsl:apply-templates>
         </xsl:otherwise>
       </xsl:choose>
-      <xsl:call-template name="nameRole"/>
-    </mods:name>
   </xsl:template>
   
   <xsl:template match="respStmt" mode="contributors">
@@ -186,43 +191,225 @@
         </xsl:call-template>
       </xsl:for-each>
     </xsl:variable>
-    <xsl:for-each select="name | persName | orgName">
-      <mods:name>
-        <xsl:apply-templates select="." mode="contributors"/>
-        <xsl:copy-of select="$role"/>
-      </mods:name>
-    </xsl:for-each>
+    <xsl:apply-templates select="* except resp" mode="name">
+      <xsl:with-param name="modsRole" select="$role" tunnel="yes"/>
+    </xsl:apply-templates>
   </xsl:template>
   
-  <xsl:template match="orgName" mode="contributors">
-    <xsl:attribute name="type" select="'corporate'"/>
-    <mods:namePart>
-      <xsl:apply-templates mode="textOnly"/>
+  <!-- NAMES -->
+  <xsl:template match="name" mode="name">
+    <xsl:call-template name="namingStruct">
+      <xsl:with-param name="nameType">
+        <!-- MODS' @type should only be used when <name> is explicitly personal
+          or corporate. Otherwise, no judgement is made and no attribute included. -->
+        <xsl:choose>
+          <!-- If there is a <forename> or <surname> child, we can assume this 
+            name refers to a person. -->
+          <xsl:when test="matches(@type,'person') or ./surname or ./forename">
+            <xsl:text>personal</xsl:text>
+          </xsl:when>
+          <xsl:when test="matches(@type,'^org')">
+            <xsl:text>corporate</xsl:text>
+          </xsl:when>
+        </xsl:choose>
+      </xsl:with-param>
+    </xsl:call-template>
+  </xsl:template>
+  
+  <xsl:template match="persName" mode="name">
+    <xsl:call-template name="namingStruct">
+      <xsl:with-param name="nameType" select="'personal'"/>
+    </xsl:call-template>
+  </xsl:template>
+  
+  <xsl:template match="orgName" mode="name">
+    <xsl:call-template name="namingStruct">
+      <xsl:with-param name="nameType" select="'corporate'"/>
+    </xsl:call-template>
+  </xsl:template>
+  
+  <xsl:template name="namingStruct">
+    <xsl:param name="nameType" as="xs:string"/>
+    <xsl:param name="modsRole" as="node()" tunnel="yes"/>
+    <mods:name>
+      <xsl:if test="$nameType">
+        <xsl:attribute name="type" select="$nameType"/>
+      </xsl:if>
+      <xsl:choose>
+        <xsl:when test="every $x in node() satisfies $x instance of text()">
+          <mods:namePart>
+            <xsl:apply-templates mode="name"/>
+          </mods:namePart>
+        </xsl:when>
+        <xsl:when test="$nameType eq 'personal'">
+          <xsl:call-template name="persNameHandler"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <mods:namePart>
+            <xsl:apply-templates select="." mode="name"/>
+          </mods:namePart>
+        </xsl:otherwise>
+      </xsl:choose>
+      <xsl:copy-of select="$modsRole"/>
+    </mods:name>
+  </xsl:template>
+  
+  <!-- xd: nested persNames -->
+  <!-- xd: addName -->
+  <xsl:template name="persNameHandler">
+    <xsl:variable name="surnames" select="surname"/>
+    <xsl:variable name="forenames" select="forename, genName"/>
+    <xsl:variable name="sortedNameParts" 
+      select="$surnames/descendant-or-self::*[@sort], $forenames/descendant-or-self::*[@sort]"/>
+    <!-- Since <nameLink>s are used to distinguish articles/prepositions in 
+      names as NOT part of the surname. As such, RDA cataloging rules say that
+      the content <nameLink>s must be placed at the end of the forename(s). -->
+    <xsl:variable name="nameLinks">
+      <xsl:for-each select="nameLink">
+        <xsl:apply-templates select="." mode="textOnly"/>
+        <xsl:if test="position() != last()">
+          <xsl:text> </xsl:text>
+        </xsl:if>
+      </xsl:for-each>
+    </xsl:variable>
+    
+    <!-- Arrange surnames into one <mods:namePart> -->
+    <xsl:if test="$surnames">
+      <mods:namePart type="family">
+        <xsl:for-each select="$surnames">
+          <xsl:apply-templates select="." mode="name"/>
+          <xsl:if test="position() != last()">
+            <xsl:text> </xsl:text>
+          </xsl:if>
+        </xsl:for-each>
+      </mods:namePart>
+    </xsl:if>
+    <!-- Arrange forenames into one <mods:namePart> -->
+    <xsl:if test="count($forenames) > 0 or $nameLinks">
+      <mods:namePart type="given">
+        <xsl:for-each select="$forenames">
+          <xsl:apply-templates select="." mode="name"/>
+        </xsl:for-each>
+        <xsl:value-of select="$nameLinks"/>
+      </mods:namePart>
+    </xsl:if>
+    <xsl:apply-templates select="genName | roleName | address | affiliation" mode="name"/>
+    <!-- Use @sort to create a displayForm of the name, if applicable. -->
+    <xsl:if test="$sortedNameParts">
+      <mods:displayForm>
+        <xsl:for-each select="$sortedNameParts">
+          <!-- If the sort attribute is available, then text nodes will be 
+            ignored in favor of the sorting mechanism. -->
+          <xsl:sort select="@sort" data-type="number"/>
+          
+          <xsl:apply-templates select="." mode="name"/>
+          <xsl:if test="position() != last()">
+            <xsl:text> </xsl:text>
+          </xsl:if>
+        </xsl:for-each>
+      </mods:displayForm>
+    </xsl:if>
+    
+  </xsl:template>
+  
+  <xsl:template match="genName | roleName" mode="name">
+    <mods:namePart type="termsOfAddress">
+      <xsl:apply-templates mode="name"/>
     </mods:namePart>
   </xsl:template>
   
-  <xsl:template match="persName" mode="contributors">
-    <xsl:call-template name="personalNamePart"/>
+  <xsl:template match="address | affiliation" mode="name">
+    <mods:affiliation>
+      <xsl:value-of select="normalize-space(tapasfn:text-only(.))"/>
+    </mods:affiliation>
   </xsl:template>
   
-  <xsl:template match="name" mode="contributors">
-    <!-- @mods:type should only be used when <name> is explicitly personal 
-      or corporate. Otherwise, no judgement is made and no attribute included. -->
+  <!-- The TEI allows whitespace in names. Text nodes should be considered 
+    significant, though we will normalize whitespace. -->
+  <xsl:template match="name//text() | persName//text() | orgName//text()" mode="name">
+    <xsl:value-of select="replace(.,'\s+',' ')"/>
+  </xsl:template>
+  
+  <xsl:template name="invertName">
     <xsl:choose>
-      <xsl:when test="matches(@type,'person')">
-        <xsl:attribute name="type">
-          <xsl:text>personal</xsl:text>
-        </xsl:attribute>
+      <xsl:when test="not(contains(., ','))">
+        <xsl:choose>
+          <xsl:when test="contains(., '.')">
+            <xsl:value-of select="substring-after(., '. ')"/>
+            <xsl:text>, </xsl:text>
+            <xsl:value-of select="substring-before(., '.')"/>
+            <xsl:text>.</xsl:text>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:value-of select="substring-after(., ' ')"/>
+            <xsl:text>, </xsl:text>
+            <xsl:value-of select="substring-before(., ' ')"/>
+          </xsl:otherwise>
+        </xsl:choose>
       </xsl:when>
-      <xsl:when test="matches(@type,'^org')">
-        <xsl:attribute name="type">
-          <xsl:text>corporate</xsl:text>
-        </xsl:attribute>
-      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="."/>
+      </xsl:otherwise>
     </xsl:choose>
-    <mods:namePart>
-      <xsl:apply-templates mode="textOnly"/>
-    </mods:namePart>
+  </xsl:template>
+  
+  <xsl:template name="nameRole">
+    <xsl:param name="localName" select="local-name(.)"/>
+    <xsl:variable name="relator">
+      <xsl:choose>
+        <!-- TEI elements belonging to model.respLike -->
+        <xsl:when test="$localName eq 'author'">
+          <xsl:text>Author</xsl:text>
+        </xsl:when>
+        <xsl:when test="$localName eq 'editor'">
+          <xsl:text>Editor</xsl:text>
+        </xsl:when>
+        <xsl:when test="$localName eq 'funder'">
+          <xsl:text>Funder</xsl:text>
+        </xsl:when>
+        <xsl:when test="$localName eq 'principal'">
+          <xsl:text>Research team head</xsl:text>
+        </xsl:when>
+        <xsl:when test="$localName eq 'sponsor'">
+          <xsl:text>Sponsor</xsl:text>
+        </xsl:when>
+        <!-- TEI elements belonging to model.publicationStmtPart.agency -->
+        <xsl:when test="$localName eq 'distributor'">
+          <xsl:text>Distributor</xsl:text>
+        </xsl:when>
+        <xsl:when test="$localName eq 'publisher' or $localName eq 'authority'">
+          <xsl:text>Publisher</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:message>
+            <xsl:text>internal error: unable to ascertain contributor role for element </xsl:text>
+            <xsl:value-of select="$localName"/>
+          </xsl:message>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:call-template name="setRole">
+      <xsl:with-param name="term" select="$relator"/>
+      <xsl:with-param name="authority" select="'marcrelator'"/>
+    </xsl:call-template>
+  </xsl:template>
+  
+  <xsl:template name="setRole">
+    <xsl:param name="roleType"/>
+    <xsl:param name="term" required="yes"/>
+    <xsl:param name="termType" select="'text'"/>
+    <xsl:param name="authority"/>
+    <mods:role>
+      <xsl:if test="$roleType">
+        <xsl:attribute name="type" select="$roleType"/>
+      </xsl:if>
+      <mods:roleTerm type="{$termType}">
+        <xsl:if test="$authority">
+          <xsl:attribute name="authority" select="$authority"/>
+        </xsl:if>
+        <xsl:value-of select="$term"/>
+      </mods:roleTerm>
+    </mods:role>
   </xsl:template>
 
   <!-- PUBLICATION STATEMENT -->
@@ -248,7 +435,7 @@
   
   <xsl:template match="publisher | distributor | authority" mode="origin">
     <mods:publisher>
-      <xsl:value-of select="tapasfn:text-only(.)"/>
+      <xsl:value-of select="tapasfn:text-only(.)"/><!-- xd -->
     </mods:publisher>
   </xsl:template>
   
@@ -467,238 +654,9 @@
       </xsl:if>
       <mods:title>
         <xsl:value-of select="if ($numNonfiling = 0) then $title
-          else substring($title,$numNonfiling+1)"/>
+                              else substring($title,$numNonfiling+1)"/>
       </mods:title>
     </mods:titleInfo>
-  </xsl:template>
-  
-  <!-- NAMES AND CONTRIBUTORS -->
-  <xsl:template name="contribName">
-    <xsl:param name="type" select="'personal'"/>
-    <mods:name type="$type">
-      <xsl:choose>
-        <xsl:when test="$type eq 'corporate'">
-          <mods:namePart>
-            <xsl:value-of select="orgName"/>
-          </mods:namePart>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:call-template name="personalNamePart"/>
-        </xsl:otherwise>
-      </xsl:choose>
-      <xsl:call-template name="nameRole"/>
-    </mods:name>
-  </xsl:template>
-  
-  <xsl:template name="personalName">
-    <mods:name type="personal">
-      <xsl:call-template name="personalNamePart"/>
-      <xsl:call-template name="nameRole"/>
-    </mods:name>
-  </xsl:template>
-  
-  <xsl:template name="corporateName">
-    <mods:name type="corporate">
-      <mods:namePart>
-        <xsl:value-of select="orgName"/>
-      </mods:namePart>
-      <xsl:call-template name="nameRole"/>
-    </mods:name>
-  </xsl:template>
-  
-  <xsl:template name="personalNamePart">
-    <xsl:choose>
-      <xsl:when test="surname">
-        <mods:namePart>
-          <xsl:value-of select="surname"/>
-          <xsl:text>, </xsl:text>
-          <xsl:value-of select="forename"/>
-          <xsl:if test="nameLink">
-            <xsl:text> </xsl:text>
-            <xsl:value-of select="nameLink"/>
-          </xsl:if>
-        </mods:namePart>
-      </xsl:when>
-      <xsl:when test="persName">
-        <xsl:for-each select="persName[1]">
-          <xsl:choose>
-            <xsl:when test="surname">
-              <mods:namePart>
-                <xsl:value-of select="surname"/>
-                <xsl:if test="forename">
-                  <xsl:text>, </xsl:text>
-                  <xsl:choose>
-                    <xsl:when test="forename[@type = 'first']">
-                      <xsl:value-of select="forename[@type = 'first']"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                      <xsl:value-of select="forename"/>
-                    </xsl:otherwise>
-                  </xsl:choose>
-                  <xsl:if test="forename[@type = 'middle']">
-                    <xsl:text> </xsl:text>
-                    <xsl:value-of select="forename[@type = 'middle']"/>
-                  </xsl:if>
-                </xsl:if>
-              </mods:namePart>
-            </xsl:when>
-            <xsl:when test="title">
-              <mods:namePart>
-                <xsl:value-of select="normalize-space(.)"/>
-              </mods:namePart>
-            </xsl:when>
-            <xsl:otherwise>
-              <mods:namePart>
-                <xsl:for-each select=".">
-                  <xsl:call-template name="invertName"/>
-                </xsl:for-each>
-              </mods:namePart>
-            </xsl:otherwise>
-          </xsl:choose>
-        </xsl:for-each>
-      </xsl:when>
-      <xsl:when test="name">
-        <xsl:choose>
-          <xsl:when test="name/reg">
-            <mods:namePart>
-              <xsl:value-of select="name/reg"/>
-            </mods:namePart>
-          </xsl:when>
-          <xsl:otherwise>
-            <mods:namePart>
-              <xsl:choose>
-                <xsl:when test="not(contains(name, ' '))">
-                  <xsl:value-of select="name"/>
-                </xsl:when>
-                <xsl:otherwise>
-                  <xsl:for-each select="name">
-                    <xsl:call-template name="invertName"/>
-                  </xsl:for-each>
-                </xsl:otherwise>
-              </xsl:choose>
-            </mods:namePart>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:when>
-      <xsl:when test="ancestor-or-self::name">
-        <mods:namePart>
-          <xsl:for-each select=".">
-            <xsl:call-template name="invertName"/>
-          </xsl:for-each>
-        </mods:namePart>
-      </xsl:when>
-      <xsl:otherwise>
-        <mods:namePart>
-          <!--<xsl:value-of select="text()"/>-->
-          <xsl:for-each select=".">
-            <xsl:call-template name="invertName"/>
-          </xsl:for-each>
-        </mods:namePart>
-      </xsl:otherwise>
-    </xsl:choose>
-    <xsl:if test="genName">
-      <xsl:for-each select="genName">
-        <mods:namePart type="termsOfAddress">
-          <xsl:value-of select="."/>
-        </mods:namePart>
-      </xsl:for-each>
-    </xsl:if>
-    <xsl:if test="persName/title">
-      <xsl:for-each select="persName[1]/title">
-        <mods:namePart type="termsOfAddress">
-          <xsl:value-of select="."/>
-        </mods:namePart>
-      </xsl:for-each>
-    </xsl:if>
-    <xsl:if test="roleName">
-      <xsl:for-each select="roleName">
-        <mods:namePart type="termsOfAddress">
-          <xsl:value-of select="."/>
-        </mods:namePart>
-      </xsl:for-each>
-    </xsl:if>
-  </xsl:template>
-  
-  <xsl:template name="invertName">
-    <xsl:choose>
-      <xsl:when test="not(contains(., ','))">
-        <xsl:choose>
-          <xsl:when test="contains(., '.')">
-            <xsl:value-of select="substring-after(., '. ')"/>
-            <xsl:text>, </xsl:text>
-            <xsl:value-of select="substring-before(., '.')"/>
-            <xsl:text>.</xsl:text>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:value-of select="substring-after(., ' ')"/>
-            <xsl:text>, </xsl:text>
-            <xsl:value-of select="substring-before(., ' ')"/>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:value-of select="."/>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
-  
-  <xsl:template name="nameRole">
-    <xsl:param name="localName" select="local-name(.)"/>
-    <xsl:variable name="relator">
-      <xsl:choose>
-        <!-- TEI elements belonging to model.respLike -->
-        <xsl:when test="$localName eq 'author'">
-          <xsl:text>Author</xsl:text>
-        </xsl:when>
-        <xsl:when test="$localName eq 'editor'">
-          <xsl:text>Editor</xsl:text>
-        </xsl:when>
-        <xsl:when test="$localName eq 'funder'">
-          <xsl:text>Funder</xsl:text>
-        </xsl:when>
-        <xsl:when test="$localName eq 'principal'">
-          <xsl:text>Research team head</xsl:text>
-        </xsl:when>
-        <xsl:when test="$localName eq 'sponsor'">
-          <xsl:text>Sponsor</xsl:text>
-        </xsl:when>
-        <!-- TEI elements belonging to model.publicationStmtPart.agency -->
-        <xsl:when test="$localName eq 'distributor'">
-          <xsl:text>Distributor</xsl:text>
-        </xsl:when>
-        <xsl:when test="$localName eq 'publisher' or $localName eq 'authority'">
-          <xsl:text>Publisher</xsl:text>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:message>
-            <xsl:text>internal error: unable to ascertain contributor role for element </xsl:text>
-            <xsl:value-of select="$localName"/>
-          </xsl:message>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    <xsl:call-template name="setRole">
-      <xsl:with-param name="term" select="$relator"/>
-      <xsl:with-param name="authority" select="'marcrelator'"/>
-    </xsl:call-template>
-  </xsl:template>
-  
-  <xsl:template name="setRole">
-    <xsl:param name="roleType"/>
-    <xsl:param name="term" required="yes"/>
-    <xsl:param name="termType" select="'text'"/>
-    <xsl:param name="authority"/>
-    <mods:role>
-      <xsl:if test="$roleType">
-        <xsl:attribute name="type" select="$roleType"/>
-      </xsl:if>
-      <mods:roleTerm type="{$termType}">
-        <xsl:if test="$authority">
-          <xsl:attribute name="authority" select="$authority"/>
-        </xsl:if>
-        <xsl:value-of select="$term"/>
-      </mods:roleTerm>
-    </mods:role>
   </xsl:template>
   
   <!-- RELATED ITEM --> <!-- xd -->
