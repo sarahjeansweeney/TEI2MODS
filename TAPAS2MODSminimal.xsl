@@ -462,21 +462,17 @@
   </xsl:template>
 
   <!-- EDITION -->
-  <xsl:template match="fileDesc/editionStmt" mode="edition">
+  <xsl:template match="fileDesc/editionStmt/edition[normalize-space(concat(@n,.)) ne '']" mode="edition">
     <mods:edition>
-      <xsl:apply-templates mode="edition"/>
+      <xsl:choose>
+        <xsl:when test="@n">
+          <xsl:value-of select="@n"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:apply-templates mode="textOnly"/>
+        </xsl:otherwise>
+      </xsl:choose>
     </mods:edition>
-  </xsl:template>
-  
-  <xsl:template match="edition" mode="edition">
-    <xsl:choose>
-      <xsl:when test="@n">
-        <xsl:value-of select="@n"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:apply-templates mode="textOnly"/>
-      </xsl:otherwise>
-    </xsl:choose>
   </xsl:template>
   
   <!-- LICENSING -->
@@ -516,7 +512,13 @@
       <mods:languageTerm type="code" authority="rfc5646">
         <xsl:value-of select="@ident"/>
       </mods:languageTerm>
-      <xsl:if test="starts-with( @ident,'x-')">
+      <xsl:if test="
+           starts-with( @ident,'x-')
+        or matches( @ident,'^q[a-t][a-z]-?')
+        or matches( @ident,'-(Qaa[a-z]|Qab[a-x])(-|$)')
+        or matches( @ident,'-(AA|Q[M-Z]|X[A-Z]|ZZ)(-|$)')
+        or contains( @ident,'-x-')
+        ">
         <mods:languageTerm type="text">
           <xsl:apply-templates/>
         </mods:languageTerm>
@@ -546,6 +548,10 @@
   <xsl:template match="term">
     <mods:subject>
       <xsl:if test="parent::keywords/@scheme">
+        <!-- this is problematic: @scheme will usually be a local IDREF style -->
+        <!-- URI, i.e. '#' followed by a bare name identifier. (Of our 43 -->
+        <!-- occurrences of <keywords>, 34 are local, 4 are absolute, and 5 -->
+        <!-- are relative names, probably errors. -Syd, 2015-08-29. -->
         <xsl:attribute name="authorityURI" select="parent::keywords/@scheme"/>
       </xsl:if>
       <mods:topic>
