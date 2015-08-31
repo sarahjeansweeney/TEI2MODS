@@ -18,7 +18,7 @@
   <!-- Written by Sarah Sweeney. -->
   <!-- Updated 2015-07 by Syd Bauman and Ashley Clark -->
   
-  <!-- PARAMS -->
+  <!-- PARAMETERS -->
   
   <xsl:param name="copyTEI" as="xs:boolean" select="false()"/>
   <xsl:param name="recordContentSource" as="xs:string" select="'TEI Archive, Publishing, and Access Service (TAPAS)'"/>
@@ -33,8 +33,11 @@
   </xsl:function>
   
   <xsl:function name="tapasfn:text-only">
-    <xsl:param name="element" as="node()"/>
-    <xsl:apply-templates select="$element" mode="textOnly"/>
+    <xsl:param name="node" as="node()"/>
+    <xsl:variable name="textSeq">
+      <xsl:apply-templates select="$node" mode="textOnly"/>
+    </xsl:variable>
+    <xsl:value-of select="normalize-space(string-join($textSeq,''))"/>
   </xsl:function>
   
   <!-- TEMPLATES -->
@@ -45,7 +48,7 @@
   <xsl:template match="text | surface | sourceDoc"/>
   
   <!-- process nodes in text-only mode -->
-    <xsl:template match="text()" mode="textOnly">
+  <xsl:template match="text()" mode="textOnly">
     <!-- return same text node with any sequence of whitespace (including -->
     <!-- leading or trailing) reduced to a single blank. -->
     <xsl:variable name="protected" select="concat('␠', .,'␠')"/>
@@ -53,8 +56,9 @@
     <xsl:variable name="result" select="substring( substring-after( $normalized ,'␠'), 1, string-length( $normalized )-2 )"/>
     <xsl:value-of select="$result"/>
   </xsl:template>
-  <xsl:template match="*" mode="textOnly">
-    <xsl:apply-templates mode="textOnly"/>
+  
+  <xsl:template match="*" mode="#all">
+    <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
   <xsl:template match="teiCorpus">
@@ -124,7 +128,7 @@
   <xsl:template match="fileDesc/extent">
     <mods:physicalDescription>
       <mods:extent>
-        <xsl:apply-templates mode="textOnly"/>
+        <xsl:value-of select="tapasfn:text-only(.)"/>
       </mods:extent>
     </mods:physicalDescription>
   </xsl:template>
@@ -132,7 +136,7 @@
   <!-- ABSTRACTS -->
   <xsl:template match="abstract | div[@type='abstract']">
     <mods:abstract>
-      <xsl:apply-templates mode="textOnly"/>
+      <xsl:value-of select="tapasfn:text-only(.)"/>
     </mods:abstract>
   </xsl:template>
   
@@ -147,7 +151,7 @@
       </xsl:when>
       <xsl:otherwise>
         <mods:accessCondition>
-          <xsl:apply-templates mode="textOnly"/>
+          <xsl:value-of select="tapasfn:text-only(.)"/>
         </mods:accessCondition>
       </xsl:otherwise>
     </xsl:choose>
@@ -163,11 +167,6 @@
             <mods:namePart>
               <xsl:value-of select="normalize-space()"/>
             </mods:namePart>
-          </mods:name>
-        </xsl:when>
-        <xsl:when test="matches(., 'unknown', 'i')">
-          <mods:name>
-            <mods:namePart>Unknown</mods:namePart>
           </mods:name>
         </xsl:when>
         <xsl:otherwise>
@@ -225,7 +224,7 @@
       <!-- If the last rule was skipped, then we've arrived at the first leaf 
         <persName>. If its ancestor was <orgName>, switch to text-only mode. -->
       <xsl:when test="ancestor::orgName">
-        <xsl:apply-templates mode="textOnly"/>
+        <xsl:value-of select="tapasfn:text-only(.)"/>
       </xsl:when>
       <xsl:otherwise>
         <xsl:call-template name="namingStruct">
@@ -278,7 +277,7 @@
       the content <nameLink>s must be placed at the end of the forename(s). -->
     <xsl:variable name="nameLinks">
       <xsl:for-each select="nameLink">
-        <xsl:apply-templates select="." mode="textOnly"/>
+        <xsl:value-of select="tapasfn:text-only(.)"/>
         <xsl:if test="position() != last()">
           <xsl:text> </xsl:text>
         </xsl:if>
@@ -332,7 +331,7 @@
   
   <xsl:template match="address | affiliation" mode="name">
     <mods:affiliation>
-      <xsl:value-of select="normalize-space(tapasfn:text-only(.))"/>
+      <xsl:value-of select="tapasfn:text-only(.)"/>
     </mods:affiliation>
   </xsl:template>
   
@@ -481,7 +480,7 @@
           <xsl:value-of select="@n"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:apply-templates mode="textOnly"/>
+          <xsl:value-of select="tapasfn:text-only(.)"/>
         </xsl:otherwise>
       </xsl:choose>
     </mods:edition>
@@ -514,7 +513,9 @@
           <xsl:text> </xsl:text>
         </xsl:if>
       </xsl:if>
-      <xsl:apply-templates mode="textOnly"/>
+      <xsl:if test="//text()">
+        <note><xsl:value-of select="tapasfn:text-only(.)"/></note>
+      </xsl:if>
     </mods:accessCondition>
   </xsl:template>
   
@@ -541,14 +542,14 @@
   <!-- NOTES -->
   <xsl:template match="notesStmt/note">
     <mods:note>
-      <xsl:apply-templates mode="textOnly"/>
+      <xsl:value-of select="tapasfn:text-only(.)"/>
     </mods:note>
   </xsl:template>
   
   <xsl:template match="fileDesc/publicationStmt[p]">
     <mods:note>
       <xsl:for-each select="p">
-        <xsl:apply-templates mode="textOnly"/>
+        <xsl:value-of select="tapasfn:text-only(.)"/>
         <xsl:if test="position() != last()">
           <xsl:text> </xsl:text>
         </xsl:if>
@@ -612,25 +613,25 @@
     <xsl:variable name="mainTitle">
       <xsl:choose>
         <xsl:when test="$allTitles/@type = 'marc245a'">
-          <xsl:apply-templates select="$allTitles[@type = 'marc245a'][1]" mode="textOnly"/>
+          <xsl:value-of select="tapasfn:text-only($allTitles[@type = 'marc245a'][1])"/>
         </xsl:when>
         <xsl:when test="$allTitles/@type = 'uniform'">
-          <xsl:apply-templates select="$allTitles[@type = 'uniform'][1]" mode="textOnly"/>
+          <xsl:value-of select="tapasfn:text-only($allTitles[@type = 'uniform'][1])"/>
         </xsl:when>
         <xsl:when test="$allTitles/@type = 'main'">
-          <xsl:apply-templates select="$allTitles[@type = 'main'][1]" mode="textOnly"/>
+          <xsl:value-of select="tapasfn:text-only($allTitles[@type = 'main'][1])"/>
         </xsl:when>
         <xsl:when test="not($allTitles/@type)">
-          <xsl:apply-templates select="$allTitles[not(@type)][1]" mode="textOnly"/>
+          <xsl:value-of select="tapasfn:text-only($allTitles[not(@type)][1])"/>
         </xsl:when>
         <xsl:when test="$allTitles/@type = 'desc'">
-          <xsl:apply-templates select="$allTitles[@type = 'desc'][1]" mode="textOnly"/>
+          <xsl:value-of select="tapasfn:text-only($allTitles[@type = 'desc'][1])"/>
         </xsl:when>
         <xsl:when test="$allTitles/@type">
-          <xsl:apply-templates select="$allTitles[@type][1]" mode="textOnly"/>
+          <xsl:value-of select="tapasfn:text-only($allTitles[@type][1])"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:apply-templates select="$allTitles[1]" mode="textOnly"/>
+          <xsl:value-of select="tapasfn:text-only($allTitles[1])"/>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
@@ -675,7 +676,7 @@
     <mods:relatedItem type="series">
       <xsl:call-template name="constructTitle">
         <xsl:with-param name="inputTitle">
-          <xsl:apply-templates mode="textOnly"/>
+          <xsl:value-of select="tapasfn:text-only(.)"/>
         </xsl:with-param>
       </xsl:call-template>
     </mods:relatedItem>
@@ -724,7 +725,7 @@
     <xsl:param name="biblType" as="xs:string"/>
     <xsl:call-template name="constructTitle">
       <xsl:with-param name="inputTitle">
-        <xsl:apply-templates mode="textOnly"/>
+        <xsl:value-of select="tapasfn:text-only(.)"/>
       </xsl:with-param>
     </xsl:call-template>
   </xsl:template>
