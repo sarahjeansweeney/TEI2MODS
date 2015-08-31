@@ -155,7 +155,7 @@
   
   <!-- CONTRIBUTORS -->
   <xsl:template
-    match="author | editor | funder | principal | sponsor | publisher | distributor | authority"
+    match="author | editor | funder | principal | sponsor"
     mode="contributors related">
       <xsl:choose>
         <xsl:when test="not(*) and normalize-space(.) ne ''">
@@ -216,9 +216,23 @@
   </xsl:template>
   
   <xsl:template match="persName" mode="name">
-    <xsl:call-template name="namingStruct">
-      <xsl:with-param name="nameType" select="'personal'"/>
-    </xsl:call-template>
+    <xsl:choose>
+      <!-- If there is 1+ child persName, choose the first. In the case of 
+        nested <persName>s, this logic should select the first leaf <persName>. -->
+      <xsl:when test="persName">
+        <xsl:apply-templates select="persName[1]" mode="name"/>
+      </xsl:when>
+      <!-- If the last rule was skipped, then we've arrived at the first leaf 
+        <persName>. If its ancestor was <orgName>, switch to text-only mode. -->
+      <xsl:when test="ancestor::orgName">
+        <xsl:apply-templates mode="textOnly"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:call-template name="namingStruct">
+          <xsl:with-param name="nameType" select="'personal'"/>
+        </xsl:call-template>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   
   <xsl:template match="orgName" mode="name">
@@ -245,7 +259,7 @@
         </xsl:when>
         <xsl:otherwise>
           <mods:namePart>
-            <xsl:apply-templates select="." mode="name"/>
+            <xsl:apply-templates mode="name"/>
           </mods:namePart>
         </xsl:otherwise>
       </xsl:choose>
@@ -253,14 +267,13 @@
     </mods:name>
   </xsl:template>
   
-  <!-- xd: nested persNames -->
   <!-- xd: addName -->
   <xsl:template name="persNameHandler">
     <xsl:variable name="surnames" select="surname"/>
     <xsl:variable name="forenames" select="forename, genName"/>
     <xsl:variable name="sortedNameParts" 
       select="$surnames/descendant-or-self::*[@sort], $forenames/descendant-or-self::*[@sort]"/>
-    <!-- Since <nameLink>s are used to distinguish articles/prepositions in 
+    <!-- <nameLink>s are used to distinguish articles/prepositions in 
       names as NOT part of the surname. As such, RDA cataloging rules say that
       the content <nameLink>s must be placed at the end of the forename(s). -->
     <xsl:variable name="nameLinks">
@@ -432,7 +445,7 @@
     </mods:place>
   </xsl:template>
   
-  <xsl:template match="publisher | distributor | authority" mode="origin">
+  <xsl:template match="publisher | distributor | authority" mode="origin related">
     <mods:publisher>
       <xsl:value-of select="tapasfn:text-only(.)"/><!-- xd -->
     </mods:publisher>
@@ -677,9 +690,9 @@
   <!-- xd: allow complex nested biblLikes? -->
   <xsl:template match="biblFull" mode="related">
     <mods:relatedItem>
-      <xsl:apply-templates select=".//title" mode="related"/>
       <xsl:apply-templates select=".//titleStmt" mode="contributors"/>
       <xsl:apply-templates select=".//publicationStmt" mode="origin"/>
+      <xsl:apply-templates mode="related"/>
     </mods:relatedItem>
   </xsl:template>
   
@@ -692,7 +705,7 @@
   </xsl:template>
   
   <xsl:template match="bibl | biblScope | biblStruct" mode="related">
-    <mods:relatedItem type="original">
+    <mods:relatedItem>
       <xsl:apply-templates mode="related"/>
     </mods:relatedItem>
   </xsl:template>
