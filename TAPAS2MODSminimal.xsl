@@ -2,7 +2,6 @@
 <xsl:stylesheet version="2.0"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns:mods="http://www.loc.gov/mods/v3"
-  xmlns:copyrightmd="http://www.cdlib.org/inside/diglib/copyrightMD"
   xmlns:tei="http://www.tei-c.org/ns/1.0"
   xpath-default-namespace="http://www.tei-c.org/ns/1.0"
   xmlns:wwpfn="http://www.wwp.northeastern.edu/ns/functions"
@@ -159,7 +158,7 @@
     match="author | editor | funder | principal | sponsor | publisher | distributor | authority"
     mode="contributors related">
       <xsl:choose>
-        <xsl:when test="every $x in node() satisfies $x instance of text()">
+        <xsl:when test="not(*) and normalize-space(.) ne ''">
           <mods:name>
             <mods:namePart>
               <xsl:value-of select="normalize-space()"/>
@@ -236,7 +235,7 @@
         <xsl:attribute name="type" select="$nameType"/>
       </xsl:if>
       <xsl:choose>
-        <xsl:when test="every $x in node() satisfies $x instance of text()">
+        <xsl:when test="not(*) and normalize-space(.) ne ''">
           <mods:namePart>
             <xsl:apply-templates mode="name"/>
           </mods:namePart>
@@ -547,13 +546,6 @@
   <!-- SUBJECTS -->
   <xsl:template match="term">
     <mods:subject>
-      <xsl:if test="parent::keywords/@scheme">
-        <!-- this is problematic: @scheme will usually be a local IDREF style -->
-        <!-- URI, i.e. '#' followed by a bare name identifier. (Of our 43 -->
-        <!-- occurrences of <keywords>, 34 are local, 4 are absolute, and 5 -->
-        <!-- are relative names, probably errors. -Syd, 2015-08-29. -->
-        <xsl:attribute name="authorityURI" select="parent::keywords/@scheme"/>
-      </xsl:if>
       <mods:topic>
         <xsl:value-of select="."/>
       </mods:topic>
@@ -659,8 +651,7 @@
         </mods:nonSort>
       </xsl:if>
       <mods:title>
-        <xsl:value-of select="if ($numNonfiling = 0) then $title
-                              else substring($title,$numNonfiling+1)"/>
+        <xsl:value-of select="substring($title,$numNonfiling+1)"/>
       </mods:title>
     </mods:titleInfo>
   </xsl:template>
@@ -692,10 +683,10 @@
     </mods:relatedItem>
   </xsl:template>
   
-  <xsl:template match="bibl[ every $x in node() satisfies $x instance of text() ]" mode="related">
+  <xsl:template match="bibl[ not(*) and normalize-space(.) ne '' ]" mode="related">
     <mods:relatedItem>
       <mods:note>
-       <xsl:value-of select="."/>
+        <xsl:value-of select="normalize-space(.)"/>
       </mods:note>
     </mods:relatedItem>
   </xsl:template>
