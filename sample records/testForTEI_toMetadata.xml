@@ -22,6 +22,7 @@
             <surname>Rochefoucault</surname>
           </name>
         </author>
+        <editor><persName>Son of <persName>Bob</persName></persName></editor>
       </titleStmt>
       <editionStmt>
         <edition n="1">Edition 1</edition>
@@ -67,12 +68,37 @@
             <monogr>
               <title>BiblStruct/monogr Title</title>
               <imprint>
-                <publisher>STAR Labs</publisher>
+                <publisher>Imprint/publisher</publisher>
               </imprint>
             </monogr>
           </biblStruct>
           <msDesc>
-            <msIdentifier> </msIdentifier>
+            <msIdentifier>
+              <repository>S.T.A.R. Labs</repository>
+              <msName>A Previously Distinctly Separate Manuscript</msName>
+            </msIdentifier>
+            <msContents>
+              <msItem>
+                <locus from="20v">20v</locus>
+                <editor>A. Thena</editor>
+                <title>On clay children</title>
+              </msItem>
+              <msItemStruct>
+                <locusGrp>
+                  <locus>4-7ff.</locus>
+                  <locus>10ff.</locus>
+                </locusGrp>
+                <bibl>
+                  <ref target="tei_full_metadata.xml">Ref'd Title</ref>, by Whitman</bibl>
+                <textLang xml:lang="en" mainLang="la" otherLangs="de fr">Mostly in Latin with some German and French.</textLang>
+              </msItemStruct>
+            </msContents>
+            <msPart>
+              <msIdentifier>
+                <msName>msPart Identifier</msName>
+              </msIdentifier>
+              <p>msPart text</p>
+            </msPart>
           </msDesc>
         </listBibl>
         <bibl> Created electronically. </bibl>
@@ -81,8 +107,8 @@
     <encodingDesc><p> </p></encodingDesc>
     <profileDesc>
       <abstract>
-        <p>This is an abstract. It is generally a summary of the text.
-          Not here, though!</p>
+        <p>This is an abstract. It is generally a summary of the text.</p>
+        <p>Not here, though!</p>
       </abstract>
       <textClass>
         <keywords>

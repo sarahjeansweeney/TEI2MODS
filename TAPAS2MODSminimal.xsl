@@ -42,12 +42,16 @@
   
   <!-- TEMPLATES -->
   
+  <xsl:template match="*" mode="#all">
+    <xsl:apply-templates mode="#current"/>
+  </xsl:template>
+  
+  <!-- TEXT RESOLVERS -->
   <!-- For now, ignore text nodes by default -->
   <xsl:template match="text()" mode="#default origin related contributors biblScope"/>
   <!-- Ignore content, as opposed to metadata -->
   <xsl:template match="text | surface | sourceDoc"/>
   
-  <!-- process nodes in text-only mode -->
   <xsl:template match="text()" mode="textOnly">
     <!-- return same text node with any sequence of whitespace (including -->
     <!-- leading or trailing) reduced to a single blank. -->
@@ -57,10 +61,32 @@
     <xsl:value-of select="$result"/>
   </xsl:template>
   
-  <xsl:template match="*" mode="#all">
-    <xsl:apply-templates mode="#current"/>
+  <xsl:template match="p | ab" mode="textOnly">
+    <xsl:apply-templates mode="textOnly"/>
+    <xsl:text> </xsl:text>
   </xsl:template>
   
+  <xsl:template match="sic | reg" mode="textOnly"/>
+  
+  <!-- For elements which may contain either (1) specific, precise TEI elements 
+    (ex. <publisher>), or (2) relatively-bare text (<p>, <ab>, text() ). This 
+    template is not the most appropriate choice for elements which must treat 
+    ./text() specially, or which treat elements as invisible containers of text. -->
+  <xsl:template name="mixedContent">
+    <xsl:choose>
+      <xsl:when test="not(*) and normalize-space(.) ne ''">
+        <xsl:value-of select="normalize-space(.)"/>
+      </xsl:when>
+      <xsl:when test="* and text()[normalize-space(.) ne '']">
+        <xsl:value-of select="tapasfn:text-only(.)"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:apply-templates mode="#current"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+  
+  <!-- TEI DOCUMENTS -->
   <xsl:template match="teiCorpus">
     <mods:collection>
       <xsl:apply-templates/>
@@ -135,10 +161,6 @@
     </mods:abstract>
   </xsl:template>
   
-  <xsl:template match="fileDesc/publicationStmt">
-    <xsl:apply-templates mode="#current"/>
-  </xsl:template>
-  
   <xsl:template match="publicationStmt/availability">
     <xsl:choose>
       <xsl:when test="license">
@@ -162,6 +184,7 @@
             <mods:namePart>
               <xsl:value-of select="normalize-space()"/>
             </mods:namePart>
+            <xsl:call-template name="nameRole"/>
           </mods:name>
         </xsl:when>
         <xsl:otherwise>
@@ -211,10 +234,17 @@
   
   <xsl:template match="persName" mode="name">
     <xsl:choose>
+      <!-- If this persName holds mixed content, its children will be reduced 
+        to plain text. -->
+      <xsl:when test="* and text()[normalize-space(.) ne '']">
+        <xsl:call-template name="namingStruct">
+          <xsl:with-param name="nameType" select="'personal'"/>
+        </xsl:call-template>
+      </xsl:when>
       <!-- If there is 1+ child persName, choose the first. In the case of 
         nested <persName>s, this logic should select the first leaf <persName>. -->
       <xsl:when test="persName">
-        <xsl:apply-templates select="persName[1]" mode="name"/> <!--  -->
+        <xsl:apply-templates select="persName[1]" mode="name"/>
       </xsl:when>
       <!-- If the last rule was skipped, then we've arrived at the first leaf 
         <persName>. If its ancestor was <orgName>, switch to text-only mode. -->
@@ -245,7 +275,12 @@
       <xsl:choose>
         <xsl:when test="not(*) and normalize-space(.) ne ''">
           <mods:namePart>
-            <xsl:apply-templates mode="name"/>
+            <xsl:value-of select="normalize-space()"/>
+          </mods:namePart>
+        </xsl:when>
+        <xsl:when test="* and text()[normalize-space(.) ne '']">
+          <mods:namePart>
+            <xsl:value-of select="tapasfn:text-only(.)"/>
           </mods:namePart>
         </xsl:when>
         <xsl:when test="$nameType eq 'personal'">
@@ -307,7 +342,6 @@
           <!-- If the sort attribute is available, then text nodes will be 
             ignored in favor of the sorting mechanism. -->
           <xsl:sort select="@sort" data-type="number"/>
-          
           <xsl:apply-templates select="." mode="name"/>
           <xsl:if test="position() != last()">
             <xsl:text> </xsl:text>
@@ -418,16 +452,14 @@
   </xsl:template>
 
   <!-- PUBLICATION STATEMENT -->
-  <xsl:template match="publicationStmt | imprint" mode="origin related">
+  <xsl:template match="publicationStmt | imprint" mode="origin">
     <xsl:param name="digitalEdition" as="node()" tunnel="yes"/>
-    <xsl:if test="pubPlace or publisher or distributor or authority or date">
-      <mods:originInfo>
-        <xsl:if test="not(empty($digitalEdition))">
-          <xsl:copy-of select="$digitalEdition"/>
-        </xsl:if>
-        <xsl:apply-templates mode="origin"/>
-      </mods:originInfo>
-    </xsl:if>
+    <mods:originInfo>
+      <xsl:if test="not(empty($digitalEdition))">
+        <xsl:copy-of select="$digitalEdition"/>
+      </xsl:if>
+      <xsl:call-template name="mixedContent"/>
+    </mods:originInfo>
   </xsl:template>
   
   <xsl:template match="pubPlace" mode="origin">
@@ -467,17 +499,21 @@
   </xsl:template>
 
   <!-- EDITION -->
-  <xsl:template match="fileDesc/editionStmt/edition[normalize-space(concat(@n,.)) ne '']" mode="edition">
+  <xsl:template match="fileDesc/editionStmt" mode="edition">
     <mods:edition>
-      <xsl:choose>
-        <xsl:when test="@n">
-          <xsl:value-of select="@n"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="tapasfn:text-only(.)"/>
-        </xsl:otherwise>
-      </xsl:choose>
+      <xsl:call-template name="mixedContent"/>
     </mods:edition>
+  </xsl:template>
+  
+  <xsl:template match="fileDesc/editionStmt/edition[normalize-space(concat(@n,.)) ne '']" mode="edition">
+    <xsl:choose>
+      <xsl:when test="@n">
+        <xsl:value-of select="@n"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="tapasfn:text-only(.)"/>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   
   <!-- LICENSING -->
@@ -486,29 +522,26 @@
       <xsl:if test="@target | @when
                   | @notBefore | @notAfter
                   | @from | @to">
-        <conditions>
+        <mods:conditions>
           <xsl:if test="@target">
-            <url><xsl:value-of select="@target"/></url>
+            <mods:url><xsl:value-of select="@target"/></mods:url>
           </xsl:if>
           <xsl:if test="@when">
-            <date><xsl:value-of select="@when"/></date>
+            <mods:date><xsl:value-of select="@when"/></mods:date>
           </xsl:if>
           <xsl:if test="@notBefore">
-            <date>not before <xsl:value-of select="@notBefore"/></date>
+            <mods:date>not before <xsl:value-of select="@notBefore"/></mods:date>
           </xsl:if>
           <xsl:if test="@notAfter">
-            <date>not after <xsl:value-of select="@notBefore"/></date>
+            <mods:date>not after <xsl:value-of select="@notBefore"/></mods:date>
           </xsl:if>
           <xsl:if test="@from|@to">
-            <date><xsl:value-of select="@from"/>&#x2013;<xsl:value-of select="@to"/></date>
+            <mods:date><xsl:value-of select="@from"/>&#x2013;<xsl:value-of select="@to"/></mods:date>
           </xsl:if>
-        </conditions>
-        <xsl:if test="normalize-space(.) != ''">
-          <xsl:text> </xsl:text>
-        </xsl:if>
+        </mods:conditions>
       </xsl:if>
       <xsl:if test="//text()">
-        <note><xsl:value-of select="tapasfn:text-only(.)"/></note>
+        <mods:note><xsl:value-of select="tapasfn:text-only(.)"/></mods:note>
       </xsl:if>
     </mods:accessCondition>
   </xsl:template>
@@ -575,7 +608,13 @@
     <xsl:apply-templates mode="related"/>
   </xsl:template>
   
-  <xsl:template match="bibl | biblStruct | msDesc" mode="related">
+  <xsl:template match="bibl | msDesc" mode="related">
+    <mods:relatedItem>
+      <xsl:call-template name="mixedContent"/>
+    </mods:relatedItem>
+  </xsl:template>
+  
+  <xsl:template match="biblStruct" mode="related">
     <mods:relatedItem>
       <xsl:apply-templates mode="related"/>
     </mods:relatedItem>
@@ -588,16 +627,14 @@
     </mods:relatedItem>
   </xsl:template>
   
-  <xsl:template match="bibl[ not(*) and normalize-space(.) ne '' ]" mode="related">
-    <mods:relatedItem>
-      <xsl:value-of select="normalize-space(.)"/>
-    </mods:relatedItem>
+  <xsl:template match="publicationStmt | imprint" mode="related">
+    <xsl:apply-templates select="." mode="origin"/>
   </xsl:template>
   
   <!-- xd: is there a @type on <bibl> for series? -->
   <xsl:template match="seriesStmt" mode="related">
     <mods:relatedItem type="series">
-      <xsl:apply-templates mode="related"/>
+      <xsl:call-template name="mixedContent"/>
     </mods:relatedItem>
   </xsl:template>
   
@@ -631,8 +668,7 @@
     </mods:relatedItem>
   </xsl:template>
   
-  <xsl:template match="sourceDesc//title" mode="related">
-    <xsl:param name="biblType" as="xs:string"/>
+  <xsl:template match="sourceDesc//title | msName" mode="related">
     <xsl:call-template name="constructTitle">
       <xsl:with-param name="inputTitle">
         <xsl:value-of select="tapasfn:text-only(.)"/>
@@ -640,10 +676,14 @@
     </xsl:call-template>
   </xsl:template>
   
-  
+  <xsl:template match="msIdentifier/*[not(name() eq 'msName')]" mode="related">
+    <mods:note type="{local-name()}">
+      <xsl:value-of select="tapasfn:text-only(.)"/>
+    </mods:note>
+  </xsl:template>
   
   <!-- PARTS -->
-  <xsl:template match="biblScope" mode="related">
+  <xsl:template match="biblScope | locus" mode="related">
     <mods:part>
       <!-- Handle optional attributes -->
       <xsl:choose>
