@@ -662,7 +662,7 @@
   </xsl:template>
   
   <!-- xd: Is there a @type on <bibl> for analytics? -->
-  <xsl:template match="sourceDesc//analytic | sourceDesc//*[title[@level eq 'a']] | msPart" mode="related">
+  <xsl:template match="sourceDesc//analytic | sourceDesc//*[not(self::monogr)][title[@level eq 'a']] | msPart" mode="related">
     <mods:relatedItem type="constituent">
       <xsl:apply-templates mode="related"/>
     </mods:relatedItem>
