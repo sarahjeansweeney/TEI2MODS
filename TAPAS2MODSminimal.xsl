@@ -66,7 +66,7 @@
     <xsl:text> </xsl:text>
   </xsl:template>
   
-  <xsl:template match="sic | reg" mode="textOnly"/>
+  <xsl:template match="sic" mode="textOnly"/>
   
   <!-- For elements which may contain either (1) specific, precise TEI elements 
     (ex. <publisher>), or (2) relatively-bare text (<p>, <ab>, text() ). This 
