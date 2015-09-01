@@ -2,7 +2,7 @@
   <teiHeader>
     <fileDesc>
       <titleStmt>
-        <title>A Source Book for Ancient Church History</title>
+        <title>A Test for Metadata</title>
         <author>
           <name type="person">Joseph Cullen Ayer, Jr., Ph.D.</name>
           <persName>
@@ -27,14 +27,11 @@
         <edition n="1">Edition 1</edition>
       </editionStmt>
       <publicationStmt>
-        <publisher>Project Gutenberg</publisher>
-        <date>April 2, 2008</date>
-        <idno type="etext-no">24979</idno>
+        <publisher>TAPAS</publisher>
+        <date>September 1, 2015</date>
         <availability>
-          <p>This eBook is for the use of anyone anywhere at no cost and with
-            almost no restrictions whatsoever. You may copy it, give it away or
-            re-use it under the terms of the Project Gutenberg License online at
-            www.gutenberg.org/license</p>
+          <p>This file is free for anyone to use or distribute. Not sure why 
+            you'd want to do so, but you can!</p>
         </availability>
       </publicationStmt>
       <sourceDesc>
@@ -101,6 +98,15 @@
       </langUsage>
     </profileDesc>
     <revisionDesc>
+      <change when="2015-09-01">
+        <p>Ashley M. Clark removed almost everything from this TEI file that 
+          corresponded to Dr. Ayer's "A Source Book for Ancient Church 
+          History", published by Project Gutenberg. The file had already been 
+          drastically edited down, but this change is intended as 
+          acknowledgment that, in the service of testing TEI-to-metadata 
+          workflows, this file has become its own entity.
+        </p>
+      </change>
       <change>
         <date when="2008-04-02">April 2, 2008</date>
         <p> Produced by Greg Weeks, La Monte H.P. Yarrol, David King, and
@@ -113,65 +119,10 @@
     </revisionDesc>
   </teiHeader>
   <text xml:lang="en">
-    <front>
-      <div>
-        <divGen type="pgheader"/>
-      </div>
-      <div>
-        <divGen type="encodingDesc"/>
-      </div>
-      
-      
-
-      <div rend="page-break-before: always">
-        <p rend="font-size: xx-large; text-align: center; bold">A Source Book
-          for Ancient Church History</p>
-        <p rend="font-size: x-large; text-align: center; bold">From the
-          Apostolic Age to the Close of the Conciliar Period</p>
-        <p rend="font-size: xx-large; text-align: center; bold">by Joseph Cullen
-          Ayer, Jr., Ph.D.</p>
-        <p rend="font-size: large; text-align: center">Professor of
-          Ecclesiastical History in the Divinity School of the Protestant
-          Episcopal Church in Philadelphia</p>
-        <p rend="font-size: large; text-align: center">New York</p>
-        <p rend="font-size: large; text-align: center">Charles Scribner's
-          Sons</p>
-        <p rend="text-align: center">1913</p>
-      </div>
-      <div rend="page-break-before: always">
-        <head>Contents</head>
-        <divGen type="toc"/>
-      </div>
-    </front>
-
+    <front></front>
     <body>
-
-      <pb n="v"/>
-      <anchor xml:id="Pgv"/>
-
-      <div rend="page-break-before: always">
-        <index indexName="toc"/>
-        <index indexName="pdf"/>
-        <head>Errata.</head>
-
-        <p> [Transcriber's Note: These corrections have already been applied to
-          the text in this e-book.] </p>
-
-        <p> Page 55, line 26. Lucian, of Samosata, does, etc.: omit commas. </p>
-
-      </div>
-
+      <p>This is the body of the text.</p>
     </body>
-    <back rend="page-break-before: right">
-      <div xml:id="footnotes">
-        <index indexName="toc"/>
-        <index indexName="pdf"/>
-        <head>Footnotes</head>
-        <divGen type="footnotes"/>
-      </div>
-      <div rend="page-break-before: right">
-        <divGen type="pgfooter"/>
-      </div>
-    </back>
+    <back></back>
   </text>
 </TEI>
