@@ -16,7 +16,7 @@
   <!-- Read in a TEI-encoded file intended for TAPAS, and write -->
   <!-- out a MODS record for said file. -->
   <!-- Written by Sarah Sweeney. -->
-  <!-- Updated 2015-07 by Syd Bauman and Ashley Clark -->
+  <!-- Updated 2015-09 by Syd Bauman and Ashley Clark -->
   
   <!-- PARAMETERS -->
   
@@ -42,8 +42,8 @@
   
   <!-- TEMPLATES -->
   
-  <!-- For now, ignore text nodes by default (why? —sb) -->
-  <xsl:template match="text()" mode="#default origin related contributors"/>
+  <!-- For now, ignore text nodes by default -->
+  <xsl:template match="text()" mode="#default origin related contributors biblScope"/>
   <!-- Ignore content, as opposed to metadata -->
   <xsl:template match="text | surface | sourceDoc"/>
   
@@ -71,15 +71,12 @@
     <xsl:variable name="digitalEdition">
       <xsl:apply-templates select="//fileDesc/editionStmt" mode="edition"/>
     </xsl:variable>
-    
     <mods:mods>
       <xsl:apply-templates select="teiHeader">
         <xsl:with-param name="digitalEdition" tunnel="yes" select="$digitalEdition"/>
       </xsl:apply-templates>
-      
       <!-- abstract -->
       <xsl:apply-templates select="//text//div[@type='abstract']"/>
-      
       <!-- typeOfResource -->
       <mods:typeOfResource>
         <xsl:if test="parent::teiCorpus">
@@ -87,10 +84,8 @@
         </xsl:if>
         <xsl:text>text</xsl:text>
       </mods:typeOfResource>
-      
       <!-- genre -->
       <mods:genre authority="aat">texts (document genres)</mods:genre>
-      
       <!-- metadata record info -->
       <mods:recordInfo>
         <mods:recordContentSource><xsl:value-of select="$recordContentSource"/></mods:recordContentSource>
@@ -99,7 +94,7 @@
           <mods:languageTerm type="text" authority="iso639-2b">English</mods:languageTerm>
         </mods:languageOfCataloging>
       </mods:recordInfo>
-      
+      <!-- extension, if desired -->
       <xsl:if test="$copyTEI">
         <xsl:call-template name="extensionTEI"/>
       </xsl:if>
@@ -108,19 +103,19 @@
   
   <xsl:template match="teiHeader">
     <xsl:call-template name="setAllTitles"/>
-
     <!-- name -->
     <xsl:apply-templates
-      select="//fileDesc//author | //fileDesc//editor | //fileDesc//funder 
-      | //fileDesc//principal | //fileDesc//sponsor | //fileDesc//respStmt"
+      select="//fileDesc/*[not(name() eq 'sourceDesc')]//author 
+            | //fileDesc/*[not(name() eq 'sourceDesc')]//editor 
+            | //fileDesc/*[not(name() eq 'sourceDesc')]//funder 
+            | //fileDesc/*[not(name() eq 'sourceDesc')]//principal 
+            | //fileDesc/*[not(name() eq 'sourceDesc')]//sponsor 
+            | //fileDesc/*[not(name() eq 'sourceDesc')]//respStmt"
       mode="contributors"/>
-
     <!-- originInfo -->
-    <xsl:apply-templates select="//publicationStmt" mode="origin"/>
-
+    <xsl:apply-templates select="//fileDesc/publicationStmt" mode="origin"/>
     <!-- relatedItem -->
     <xsl:apply-templates select="//fileDesc/sourceDesc" mode="related"/>
-
     <!-- Handle the rest of the metadata in a fall-through way. -->
     <xsl:apply-templates/>
   </xsl:template>
@@ -219,7 +214,7 @@
       <!-- If there is 1+ child persName, choose the first. In the case of 
         nested <persName>s, this logic should select the first leaf <persName>. -->
       <xsl:when test="persName">
-        <xsl:apply-templates select="persName[1]" mode="name"/>
+        <xsl:apply-templates select="persName[1]" mode="name"/> <!--  -->
       </xsl:when>
       <!-- If the last rule was skipped, then we've arrived at the first leaf 
         <persName>. If its ancestor was <orgName>, switch to text-only mode. -->
@@ -320,7 +315,6 @@
         </xsl:for-each>
       </mods:displayForm>
     </xsl:if>
-    
   </xsl:template>
   
   <xsl:template match="genName | roleName" mode="name">
@@ -446,7 +440,7 @@
   
   <xsl:template match="publisher | distributor | authority" mode="origin related">
     <mods:publisher>
-      <xsl:value-of select="tapasfn:text-only(.)"/><!-- xd -->
+      <xsl:value-of select="tapasfn:text-only(.)"/>
     </mods:publisher>
   </xsl:template>
   
@@ -490,8 +484,8 @@
   <xsl:template match="license">
     <mods:accessCondition displayLabel="Licensing information:">
       <xsl:if test="@target | @when
-        | @notBefore | @notAfter
-        | @from | @to">
+                  | @notBefore | @notAfter
+                  | @from | @to">
         <conditions>
           <xsl:if test="@target">
             <url><xsl:value-of select="@target"/></url>
@@ -574,22 +568,119 @@
       </mods:topic>
     </mods:subject>
   </xsl:template>
-
-  <!--<xsl:template name="subjects">
-    <xsl:apply-templates select="//keywords/(term | list/item)"/>
-    
-    <xsl:if
-      test="encodingDesc/classDecl/taxonomy/category/catDesc">
-      <xsl:for-each
-        select="encodingDesc/classDecl/taxonomy/category/catDesc">
-        <mods:subject>
-          <mods:topic>
-            <xsl:value-of select="."/>
-          </mods:topic>
-        </mods:subject>
-      </xsl:for-each>
-    </xsl:if>
-  </xsl:template>-->
+  
+  <!-- RELATED ITEM -->
+  <!-- xd: p, ab -->
+  <xsl:template match="fileDesc/sourceDesc" mode="related">
+    <xsl:apply-templates mode="related"/>
+  </xsl:template>
+  
+  <xsl:template match="bibl | biblStruct | msDesc" mode="related">
+    <mods:relatedItem>
+      <xsl:apply-templates mode="related"/>
+    </mods:relatedItem>
+  </xsl:template>
+  
+  <xsl:template match="biblFull" mode="related">
+    <mods:relatedItem>
+      <xsl:apply-templates select=".//titleStmt" mode="contributors"/>
+      <xsl:apply-templates mode="related"/>
+    </mods:relatedItem>
+  </xsl:template>
+  
+  <xsl:template match="bibl[ not(*) and normalize-space(.) ne '' ]" mode="related">
+    <mods:relatedItem>
+      <xsl:value-of select="normalize-space(.)"/>
+    </mods:relatedItem>
+  </xsl:template>
+  
+  <!-- xd: is there a @type on <bibl> for series? -->
+  <xsl:template match="seriesStmt" mode="related">
+    <mods:relatedItem type="series">
+      <xsl:apply-templates mode="related"/>
+    </mods:relatedItem>
+  </xsl:template>
+  
+  <xsl:template match="seriesStmt/title">
+    <xsl:call-template name="constructTitle">
+      <xsl:with-param name="inputTitle">
+        <xsl:value-of select="tapasfn:text-only(.)"/>
+      </xsl:with-param>
+    </xsl:call-template>
+  </xsl:template>
+  
+  <xsl:template match="fileDesc/titleStmt/title[@level eq 's']" mode="related" 
+    priority="50">
+    <mods:relatedItem type="series">
+      <xsl:call-template name="constructTitle">
+        <xsl:with-param name="inputTitle">
+          <xsl:value-of select="tapasfn:text-only(.)"/>
+        </xsl:with-param>
+      </xsl:call-template>
+    </mods:relatedItem>
+  </xsl:template>
+  
+  <xsl:template match="sourceDesc//monogr | sourceDesc//bibl[matches(@type, '^monogr')]" mode="related">
+    <xsl:apply-templates mode="related"/>
+  </xsl:template>
+  
+  <!-- xd: Is there a @type on <bibl> for analytics? -->
+  <xsl:template match="sourceDesc//analytic | sourceDesc//*[title[@level eq 'a']] | msPart" mode="related">
+    <mods:relatedItem type="constituent">
+      <xsl:apply-templates mode="related"/>
+    </mods:relatedItem>
+  </xsl:template>
+  
+  <xsl:template match="sourceDesc//title" mode="related">
+    <xsl:param name="biblType" as="xs:string"/>
+    <xsl:call-template name="constructTitle">
+      <xsl:with-param name="inputTitle">
+        <xsl:value-of select="tapasfn:text-only(.)"/>
+      </xsl:with-param>
+    </xsl:call-template>
+  </xsl:template>
+  
+  
+  
+  <!-- PARTS -->
+  <xsl:template match="biblScope" mode="related">
+    <mods:part>
+      <!-- Handle optional attributes -->
+      <xsl:choose>
+        <xsl:when test="@from or @to">
+          <mods:extent>
+            <xsl:if test="@unit">
+              <xsl:attribute name="unit" select="@unit"/>
+            </xsl:if>
+            <xsl:if test="@from">
+              <mods:start><xsl:value-of select="@from"/></mods:start>
+            </xsl:if>
+            <xsl:if test="@to">
+              <mods:end><xsl:value-of select="@to"/></mods:end>
+            </xsl:if>
+          </mods:extent>
+        </xsl:when>
+        <xsl:when test="@unit">
+          <mods:detail type="{@unit}" level="{tapasfn:text-only(.)}"/>          
+        </xsl:when>
+      </xsl:choose>
+      <!-- Handle <biblScope>'s children -->
+      <mods:text>
+        <xsl:value-of select="tapasfn:text-only(.)"/>
+      </mods:text>
+      <!-- The only child element we match is title. There may be others 
+        later, however. -->
+      <xsl:apply-templates mode="biblScope"/>
+    </mods:part>
+  </xsl:template>
+  
+  <xsl:template match="biblScope/title" mode="biblScope">
+    <mods:detail>
+      <mods:title>
+        <xsl:value-of select="tapasfn:text-only(.)"/>
+      </mods:title>
+    </mods:detail>
+  </xsl:template>
 
   <!-- ******************* -->
   <!-- *** subroutines *** -->
@@ -668,66 +759,6 @@
         <xsl:value-of select="substring($title,$numNonfiling+1)"/>
       </mods:title>
     </mods:titleInfo>
-  </xsl:template>
-  
-  <!-- RELATED ITEM --> <!-- xd -->
-  <xsl:template match="fileDesc/titleStmt/title[@level eq 's'] | seriesStmt/title" 
-    mode="related" priority="50">
-    <mods:relatedItem type="series">
-      <xsl:call-template name="constructTitle">
-        <xsl:with-param name="inputTitle">
-          <xsl:value-of select="tapasfn:text-only(.)"/>
-        </xsl:with-param>
-      </xsl:call-template>
-    </mods:relatedItem>
-  </xsl:template>
-  
-  <!-- xd: msDesc? -->
-  <!-- xd: bibl[@type = 'monogr'] -->
-  <xsl:template match="fileDesc/sourceDesc" mode="related">
-    <xsl:apply-templates mode="related"/>
-  </xsl:template>
-  
-  <!-- xd: allow complex nested biblLikes? -->
-  <xsl:template match="biblFull" mode="related">
-    <mods:relatedItem>
-      <xsl:apply-templates select=".//titleStmt" mode="contributors"/>
-      <xsl:apply-templates select=".//publicationStmt" mode="origin"/>
-      <xsl:apply-templates mode="related"/>
-    </mods:relatedItem>
-  </xsl:template>
-  
-  <xsl:template match="bibl[ not(*) and normalize-space(.) ne '' ]" mode="related">
-    <mods:relatedItem>
-      <mods:note>
-        <xsl:value-of select="normalize-space(.)"/>
-      </mods:note>
-    </mods:relatedItem>
-  </xsl:template>
-  
-  <xsl:template match="bibl | biblScope | biblStruct" mode="related">
-    <mods:relatedItem>
-      <xsl:apply-templates mode="related"/>
-    </mods:relatedItem>
-  </xsl:template>
-  
-  <xsl:template match="sourceDesc//analytic | sourceDesc//*[title[@level eq 'a']]" mode="related">
-    <mods:relatedItem type="constituent">
-      <xsl:apply-templates mode="related"/>
-    </mods:relatedItem>
-  </xsl:template>
-  
-  <xsl:template match="sourceDesc//monogr" mode="related">
-    <xsl:apply-templates mode="related"/>
-  </xsl:template>
-  
-  <xsl:template match="sourceDesc//title" mode="related">
-    <xsl:param name="biblType" as="xs:string"/>
-    <xsl:call-template name="constructTitle">
-      <xsl:with-param name="inputTitle">
-        <xsl:value-of select="tapasfn:text-only(.)"/>
-      </xsl:with-param>
-    </xsl:call-template>
   </xsl:template>
   
   <!-- Make a copy of the entire TEI document. -->
