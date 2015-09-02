@@ -23,6 +23,7 @@
           </name>
         </author>
         <editor><persName>Son of <persName>Bob</persName></persName></editor>
+        <editor><choice><orig>A. Duck</orig><reg>Duck, Ann</reg></choice></editor>
       </titleStmt>
       <editionStmt>
         <edition n="1">Edition 1</edition>
@@ -53,6 +54,7 @@
           <biblFull>
             <titleStmt>
               <title>BiblFull Title</title>
+              <title type="sub">Subtitle</title>
             </titleStmt>
             <publicationStmt>
               <publisher><orgName><persName>Kent</persName> and <persName>Wayne</persName></orgName> Inc.</publisher>
