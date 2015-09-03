@@ -27,6 +27,7 @@
   <!-- * <mods:languageOfCataloging> does not include the main language used in the source. -->
   <!-- * @xml:lang on TEI elements do not carry over to MODS when appropriate. -->
   <!-- * <address> does not match up with `mods:name/mods:affiliation`. -->
+  <!-- * <msDesc> is handled somewhat generically. -->
   
   <!-- PARAMETERS -->
   
@@ -42,8 +43,9 @@
     <xsl:value-of select="string-length(replace($title,$leadingArticlesRegex,'$1','i'))"/>
   </xsl:function>
   
+  <!-- Apply textOnly mode to the requested node. -->
   <xsl:function name="tapasfn:text-only">
-    <xsl:param name="node" as="node()"/>
+    <xsl:param name="node" as="node()" required="yes"/>
     <xsl:variable name="textSeq">
       <xsl:apply-templates select="$node" mode="textOnly"/>
     </xsl:variable>
@@ -52,34 +54,41 @@
   
   <!-- TEMPLATES -->
   
+  <!-- If an element matches no other template, continue applying templates on 
+    its children in the current mode. -->
   <xsl:template match="*" mode="#all">
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
   <!-- TEXT RESOLVERS -->
-  <!-- For now, ignore text nodes by default -->
+  <!-- For now, ignore text nodes by default. -->
   <xsl:template match="text()" mode="#default edition name origin related contributors biblScope"/>
-  <!-- Ignore content, as opposed to metadata -->
+  <!-- Ignore content, as opposed to metadata. -->
   <xsl:template match="text | surface | sourceDoc"/>
   
-  <xsl:template match="text()" mode="textOnly">
-    <!-- return same text node with any sequence of whitespace (including -->
+  <!-- In textOnly mode, return same text node with any sequence of whitespace (including -->
     <!-- leading or trailing) reduced to a single blank. -->
+  <xsl:template match="text()" mode="textOnly">
     <xsl:variable name="protected" select="concat('␠', .,'␠')"/>
     <xsl:variable name="normalized" select="normalize-space( $protected )"/>
     <xsl:variable name="result" select="substring( substring-after( $normalized ,'␠'), 1, string-length( $normalized )-2 )"/>
     <xsl:value-of select="$result"/>
   </xsl:template>
   
+  <!-- textOnly mode reduces <p> and <ab> to its textual content, followed by 
+    a space. -->
   <xsl:template match="p | ab" mode="textOnly">
     <xsl:apply-templates mode="textOnly"/>
     <xsl:text> </xsl:text>
   </xsl:template>
   
+  <!-- In textOnly mode, the value of ptr/@target is turned into plain text. -->
   <xsl:template match="ptr[@target]" mode="textOnly">
     <xsl:value-of select="@target"/>
   </xsl:template>
   
+  <!-- In textOnly mode, the first <reg>, <corr>, or <expan> child of <choice> 
+    is used. -->
   <xsl:template match="choice" mode="textOnly">
     <xsl:apply-templates select="(reg | corr | expan)[1]" mode="textOnly"/>
   </xsl:template>
@@ -87,13 +96,14 @@
   <xsl:template match="choice/sic | choice/orig" mode="textOnly"/>
   
   <!-- For elements which may contain either (1) specific, precise TEI elements 
-    (ex. <publisher>), or (2) relatively-bare text (<p>, <ab>, text() ). This 
-    template is not the most appropriate choice for elements which must treat 
-    ./text() specially, or which treat elements as invisible containers of text. -->
+    (ex. <publisher>), or (2) relatively-bare text (<p>, <ab>, text() ). The 
+    template applies one wrapper element around any textual content. -->
   <xsl:template name="mixedContent">
     <xsl:param name="wrapper" required="yes"/>
+    <!-- If there is any plain-text child of the current node, use textOnly 
+      mode to flatten any elements and wrap the text in the specified element. -->
     <xsl:choose>
-      <xsl:when test="some $a in text()/normalize-space(.) satisfies $a ne ''">
+      <xsl:when test="text()[normalize-space(.) ne '']">
         <xsl:element name="{$wrapper}">
           <xsl:choose>
             <xsl:when test="not(*)">
@@ -105,6 +115,8 @@
           </xsl:choose>
         </xsl:element>
       </xsl:when>
+      <!-- Since <p> and <ab> imply plain text, flatten them and use the 
+        wrapper element. -->
       <xsl:when test="p | ab">
         <xsl:element name="{$wrapper}">
           <xsl:value-of select="tapasfn:text-only(.)"/>
@@ -117,13 +129,19 @@
   </xsl:template>
   
   <!-- TEI DOCUMENTS -->
+  <!-- If <teiCorpus> is the root element, use a <mods:collection> to surround 
+    the metadata for each child <TEI>. -->
   <xsl:template match="teiCorpus">
     <mods:collection>
       <xsl:apply-templates/>
     </mods:collection>
   </xsl:template>
   
+  
   <xsl:template match="TEI">
+    <!-- If there is an edition associated with this digital document, then 
+      grab that information now, to be used in the template matching 
+      <publicationStmt> or <imprint> (origin mode). -->
     <xsl:variable name="digitalEdition">
       <xsl:apply-templates select="//fileDesc/editionStmt" mode="edition"/>
     </xsl:variable>
@@ -157,14 +175,14 @@
     </mods:mods>
   </xsl:template>
   
+  <!-- Handle the rest of the metadata in a fall-through way. -->
   <xsl:template match="teiHeader">
-    <!-- Handle the rest of the metadata in a fall-through way. -->
     <xsl:apply-templates/>
   </xsl:template>
   
   <xsl:template match="fileDesc">
     <xsl:call-template name="setAllTitles"/>
-    <!-- name -->
+    <!-- Apply contributor mode; identify contributors to this work. -->
     <xsl:apply-templates
       select="*[not(name() eq 'sourceDesc')]//author 
             | *[not(name() eq 'sourceDesc')]//editor 
@@ -173,9 +191,9 @@
             | *[not(name() eq 'sourceDesc')]//sponsor 
             | *[not(name() eq 'sourceDesc')]//respStmt"
       mode="contributors"/>
-    <!-- originInfo -->
+    <!-- Apply origin mode; handle publication information. -->
     <xsl:apply-templates select="publicationStmt" mode="origin"/>
-    <!-- relatedItem -->
+    <!-- Apply related mode; list out related resources. -->
     <xsl:apply-templates select="sourceDesc" mode="related"/>
   </xsl:template>
   
@@ -199,7 +217,7 @@
     match="author | editor | funder | principal | sponsor"
     mode="contributors related">
       <xsl:choose>
-        <xsl:when test="some $a in text()/normalize-space(.) satisfies $a ne ''">
+        <xsl:when test="text()[normalize-space(.) ne '']">
           <mods:name>
             <mods:namePart>
               <xsl:choose>
@@ -265,7 +283,7 @@
     <xsl:choose>
       <!-- If this persName holds mixed content, its children will be reduced 
         to plain text. -->
-      <xsl:when test="some $a in text()/normalize-space(.) satisfies $a ne ''">
+      <xsl:when test="text()[normalize-space(.) ne '']">
         <xsl:call-template name="namingStruct">
           <xsl:with-param name="nameType" select="'personal'"/>
         </xsl:call-template>
@@ -302,7 +320,7 @@
         <xsl:attribute name="type" select="$nameType"/>
       </xsl:if>
       <xsl:choose>
-        <xsl:when test="some $a in text()/normalize-space(.) satisfies $a ne ''">
+        <xsl:when test="text()[normalize-space(.) ne '']">
           <mods:namePart>
             <xsl:choose>
               <xsl:when test="not(*)">
@@ -425,6 +443,7 @@
     </xsl:choose>
   </xsl:template>
   
+  <!-- Map TEI elements to MARC relators. -->
   <xsl:template name="nameRole">
     <xsl:param name="localName" select="local-name(.)"/>
     <xsl:variable name="relator">
@@ -466,6 +485,7 @@
     </xsl:call-template>
   </xsl:template>
   
+  <!-- Given the name of a role, generate <mods:role>. -->
   <xsl:template name="setRole">
     <xsl:param name="roleType"/>
     <xsl:param name="term" required="yes"/>
@@ -488,7 +508,7 @@
   <xsl:template match="publicationStmt | imprint" mode="origin">
     <xsl:param name="digitalEdition" as="node()" tunnel="yes"/>
     <xsl:choose>
-      <xsl:when test="some $a in text()/normalize-space(.) satisfies $a ne ''">
+      <xsl:when test="text()[normalize-space(.) ne '']">
         <mods:note type="publicationStmt">
           <xsl:choose>
             <xsl:when test="not(*)">
@@ -605,7 +625,7 @@
   <xsl:template match="fileDesc/editionStmt" mode="edition">
     <mods:edition>
       <xsl:choose>
-        <xsl:when test="some $a in text()/normalize-space(.) satisfies $a ne ''">
+        <xsl:when test="text()[normalize-space(.) ne '']">
           <xsl:choose>
             <xsl:when test="not(*)">
               <xsl:value-of select="normalize-space(.)"/>
@@ -826,16 +846,12 @@
   <!-- ******************* -->
   
   <!-- TITLES -->
+  <!-- This template generates all <mods:titleInfo> elements for the current 
+    node and its children, including determining which is the main element and 
+    which have @type='alternative'. This template should be called from the 
+    specific element which holds the titles for the current item 
+    (eg. <titleStmt>, <bibl>). -->
   <xsl:template name="setAllTitles">
-    <!-- Handle titles -->
-    <!--<xsl:variable name="allTitles" as="item()*"
-      select="fileDesc/titleStmt/title
-      | fileDesc/titleStmt/sourceDesc/bibl/title
-      | fileDesc/titleStmt/sourceDesc/biblStruct/*/title
-      | fileDesc/titleStmt/sourceDesc/biblFull/titleStmt/title
-      | fileDesc/titleStmt/sourceDesc/biblFull/sourceDesc/bibl/title
-      | fileDesc/titleStmt/sourceDesc/biblFull/sourceDesc/biblStruct/*/title
-      "/>-->
     <xsl:variable name="allTitles" as="item()*"
       select="./title
             | ./titleStmt/title
