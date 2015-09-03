@@ -28,7 +28,8 @@
   <!-- * @xml:lang on TEI elements do not carry over to MODS when appropriate. -->
   <!-- * <address> does not match up with `mods:name/mods:affiliation`. -->
   <!-- * <msDesc> is handled somewhat generically. -->
-  <!-- * "textOnly" mode does not know how to process <list> elements properly (at the moment, there are none) -->
+  <!-- * "textOnly" mode does not know how to process <list> elements properly (at the moment, there are none in TAPAS). -->
+  <!-- * <date>s are handled permissively. <mods:dateIssued> should be in W3C format, not plain text. -->
   
   <!-- PARAMETERS -->
   
