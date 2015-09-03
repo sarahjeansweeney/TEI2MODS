@@ -19,7 +19,7 @@
   <!-- Updated 2015-09 by Syd Bauman and Ashley Clark -->
   
   <!-- Known issues: -->
-  <!-- * Empty elements are allowed (mostly). -->
+  <!-- * Empty elements are allowed on output (mostly). -->
   <!-- * <choice> inside of one of the name/contributor elements is either flattened (name) or discarded (contributor). -->
   <!-- * Persons with multiple contributor roles are duplicated for each role. -->
   <!-- * `title/@type='sub'` and `title/@type='marc245b'` are considered "alternative" titles. -->
@@ -28,6 +28,7 @@
   <!-- * @xml:lang on TEI elements do not carry over to MODS when appropriate. -->
   <!-- * <address> does not match up with `mods:name/mods:affiliation`. -->
   <!-- * <msDesc> is handled somewhat generically. -->
+  <!-- * "textOnly" mode does not know how to process <list> elements properly (at the moment, there are none) -->
   
   <!-- PARAMETERS -->
   
@@ -49,7 +50,7 @@
     <xsl:variable name="textSeq">
       <xsl:apply-templates select="$node" mode="textOnly"/>
     </xsl:variable>
-    <xsl:value-of select="normalize-space(string-join($textSeq,''))"/>
+    <xsl:value-of select="normalize-space(string-join($textSeq,' '))"/>
   </xsl:function>
   
   <!-- TEMPLATES -->
@@ -67,7 +68,7 @@
   <xsl:template match="text | surface | sourceDoc"/>
   
   <!-- In textOnly mode, return same text node with any sequence of whitespace (including -->
-    <!-- leading or trailing) reduced to a single blank. -->
+  <!-- leading or trailing) reduced to a single blank. -->
   <xsl:template match="text()" mode="textOnly">
     <xsl:variable name="protected" select="concat('␠', .,'␠')"/>
     <xsl:variable name="normalized" select="normalize-space( $protected )"/>
@@ -75,15 +76,8 @@
     <xsl:value-of select="$result"/>
   </xsl:template>
   
-  <!-- textOnly mode reduces <p> and <ab> to its textual content, followed by 
-    a space. -->
-  <xsl:template match="p | ab" mode="textOnly">
-    <xsl:apply-templates mode="textOnly"/>
-    <xsl:text> </xsl:text>
-  </xsl:template>
-  
   <!-- In textOnly mode, the value of ptr/@target is turned into plain text. -->
-  <xsl:template match="ptr[@target]" mode="textOnly">
+  <xsl:template match="ptr[@target]|ref[@target and normalize-space(.) eq '']" mode="textOnly">
     <xsl:value-of select="@target"/>
   </xsl:template>
   
@@ -91,10 +85,9 @@
     is used. -->
   <xsl:template match="choice" mode="textOnly">
     <xsl:apply-templates select="(reg | corr | expan)[1]" mode="textOnly"/>
+    <!-- note that <sic>, <orig>, <abbr>, and <seg> never get processed -->
   </xsl:template>
-  
-  <xsl:template match="choice/sic | choice/orig" mode="textOnly"/>
-  
+    
   <!-- For elements which may contain either (1) specific, precise TEI elements 
     (ex. <publisher>), or (2) relatively-bare text (<p>, <ab>, text() ). The 
     template applies one wrapper element around any textual content. -->
@@ -103,7 +96,7 @@
     <!-- If there is any plain-text child of the current node, use textOnly 
       mode to flatten any elements and wrap the text in the specified element. -->
     <xsl:choose>
-      <xsl:when test="text()[normalize-space(.) ne '']">
+      <xsl:when test="p | ab | text()[normalize-space(.) ne '']">
         <xsl:element name="{$wrapper}">
           <xsl:choose>
             <xsl:when test="not(*)">
@@ -113,13 +106,6 @@
               <xsl:value-of select="tapasfn:text-only(.)"/>
             </xsl:otherwise>
           </xsl:choose>
-        </xsl:element>
-      </xsl:when>
-      <!-- Since <p> and <ab> imply plain text, flatten them and use the 
-        wrapper element. -->
-      <xsl:when test="p | ab">
-        <xsl:element name="{$wrapper}">
-          <xsl:value-of select="tapasfn:text-only(.)"/>
         </xsl:element>
       </xsl:when>
       <xsl:otherwise>
@@ -136,7 +122,6 @@
       <xsl:apply-templates/>
     </mods:collection>
   </xsl:template>
-  
   
   <xsl:template match="TEI">
     <!-- If there is an edition associated with this digital document, then 
@@ -163,7 +148,7 @@
       <!-- metadata record info -->
       <mods:recordInfo>
         <mods:recordContentSource><xsl:value-of select="$recordContentSource"/></mods:recordContentSource>
-        <mods:recordOrigin>MODS record generated from TEI source file teiHeader data.</mods:recordOrigin>
+        <mods:recordOrigin>MODS record generated from TEI source file teiHeader data on <xsl:value-of select="current-date()"/> at <xsl:value-of select="current-time()"/>.</mods:recordOrigin>
         <mods:languageOfCataloging>
           <mods:languageTerm type="text" authority="iso639-2b">English</mods:languageTerm>
         </mods:languageOfCataloging>
@@ -228,8 +213,8 @@
                   <xsl:value-of select="tapasfn:text-only(.)"/>
                 </xsl:otherwise>
               </xsl:choose>
-              <xsl:call-template name="nameRole"/>
             </mods:namePart>
+            <xsl:call-template name="nameRole"/>
           </mods:name>
         </xsl:when>
         <xsl:otherwise>
@@ -551,7 +536,7 @@
     </mods:publisher>
   </xsl:template>
   
-  <xsl:template match="date" mode="origin related">
+  <xsl:template match="date" mode="origin">
     <xsl:choose>
       <xsl:when test="@when">
         <mods:dateIssued keyDate="yes">
@@ -571,7 +556,7 @@
         </xsl:if>
       </xsl:when>
       <xsl:otherwise>
-        <mods:dateIssued>
+        <mods:dateIssued keyDate="yes">
           <xsl:value-of select="tapasfn:text-only(.)"/>
         </mods:dateIssued>
       </xsl:otherwise>
@@ -594,30 +579,9 @@
   
   <xsl:template match="licence" mode="origin">
     <mods:accessCondition displayLabel="Licensing information:">
-      <xsl:if test="@target | @when
-        | @notBefore | @notAfter
-        | @from | @to">
-        <mods:conditions>
-          <xsl:if test="@target">
-            <mods:url><xsl:value-of select="@target"/></mods:url>
-          </xsl:if>
-          <xsl:if test="@when">
-            <mods:date><xsl:value-of select="@when"/></mods:date>
-          </xsl:if>
-          <xsl:if test="@notBefore">
-            <mods:date>not before <xsl:value-of select="@notBefore"/></mods:date>
-          </xsl:if>
-          <xsl:if test="@notAfter">
-            <mods:date>not after <xsl:value-of select="@notBefore"/></mods:date>
-          </xsl:if>
-          <xsl:if test="@from|@to">
-            <mods:date><xsl:value-of select="@from"/>&#x2013;<xsl:value-of select="@to"/></mods:date>
-          </xsl:if>
-        </mods:conditions>
-      </xsl:if>
-      <xsl:if test="//text()">
-        <mods:note><xsl:value-of select="tapasfn:text-only(.)"/></mods:note>
-      </xsl:if>
+      <xsl:if test="@target">URL: <xsl:value-of select="@target"/>.&#x0A;</xsl:if>
+      <!-- maybe handle dating attrs same kinda way? -->
+      <xsl:value-of select="tapasfn:text-only(.)"/>
     </mods:accessCondition>
   </xsl:template>
 
@@ -715,6 +679,12 @@
   <!-- RELATED ITEM -->
   <xsl:template match="fileDesc/sourceDesc" mode="related">
     <xsl:apply-templates mode="related"/>
+  </xsl:template>
+  
+  <xsl:template match="date" mode="related">
+    <mods:originInfo>
+      <xsl:apply-templates select="." mode="origin"/>
+    </mods:originInfo>
   </xsl:template>
   
   <xsl:template match="bibl" mode="related">
